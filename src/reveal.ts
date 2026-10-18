@@ -1,10 +1,13 @@
 const REVEAL_SELECTOR = '[data-reveal]';
 const SKIP_SELECTOR = '[role="tooltip"], #typed-subtitle, #presence';
 const ROOT_MARGIN = '0px 0px -10% 0px';
-const CHARS_PER_SECOND = 900;
-const UNIT_PAUSE_MS = 60;
+const CHARS_PER_SECOND = 1800;
+const UNIT_PAUSE_MS = 30;
+const FAST_SCROLL_PX_PER_SECOND = 1500;
+const FAST_SCROLL_HOLD_MS = 200;
 const PENDING_CLASS = 'pending';
 const STREAMED_ATTRIBUTE = 'data-streamed';
+export const REVEAL_STORAGE_KEY = 'marcopisco-revealed';
 
 interface TextSlot {
   node: Text;
@@ -16,6 +19,9 @@ let queue: HTMLElement[] = [];
 let streaming = false;
 let frameId = 0;
 let pauseId = 0;
+let current: { unit: HTMLElement; slots: TextSlot[] } | null = null;
+let lastScroll = { y: 0, time: 0 };
+let fastUntil = 0;
 
 // Visible prefix of each string once `budget` characters have arrived, filled in order.
 export function visiblePrefixes(texts: readonly string[], budget: number): string[] {
@@ -25,6 +31,27 @@ export function visiblePrefixes(texts: readonly string[], budget: number): strin
     left -= shown.length;
     return shown;
   });
+}
+
+// A scroll covering `distance` pixels in `elapsedMs` is fast enough to skip the streaming.
+export function isFastScroll(distance: number, elapsedMs: number): boolean {
+  return elapsedMs > 0 && (Math.abs(distance) / elapsedMs) * 1000 >= FAST_SCROLL_PX_PER_SECOND;
+}
+
+function readSeen(): boolean {
+  try {
+    return sessionStorage.getItem(REVEAL_STORAGE_KEY) !== null;
+  } catch {
+    return false;
+  }
+}
+
+function saveSeen(): void {
+  try {
+    sessionStorage.setItem(REVEAL_STORAGE_KEY, '1');
+  } catch {
+    // Storage blocked: the effect simply plays again on the next load.
+  }
 }
 
 export function getRevealedFlags(): boolean[] {
@@ -52,6 +79,7 @@ function markStreamed(unit: HTMLElement): void {
 
 function finishUnit(unit: HTMLElement): void {
   unit.style.minHeight = '';
+  current = null;
   pauseId = window.setTimeout(() => {
     streaming = false;
     streamNext();
@@ -66,6 +94,7 @@ function streamUnit(unit: HTMLElement): void {
     slot.node.data = '';
   });
   markStreamed(unit);
+  current = { unit, slots };
 
   let start: number | null = null;
   const step = (now: number): void => {
@@ -88,7 +117,11 @@ function streamUnit(unit: HTMLElement): void {
 }
 
 function streamNext(): void {
-  if (streaming || queue.length === 0) {
+  if (streaming) {
+    return;
+  }
+  if (queue.length === 0) {
+    saveSeen();
     return;
   }
 
@@ -98,43 +131,85 @@ function streamNext(): void {
   streamUnit(unit);
 }
 
-function enqueue(entries: IntersectionObserverEntry[], current: IntersectionObserver): void {
+function enqueue(entries: IntersectionObserverEntry[], watcher: IntersectionObserver): void {
   for (const entry of entries) {
     if (entry.isIntersecting) {
-      current.unobserve(entry.target);
+      watcher.unobserve(entry.target);
       queue.push(entry.target as HTMLElement);
     }
   }
-  streamNext();
+  if (performance.now() < fastUntil) {
+    showReached();
+  } else {
+    streamNext();
+  }
+}
+
+// Completes the streaming unit, the queue and every pending unit already scrolled into or past.
+function showReached(): void {
+  cancelAnimationFrame(frameId);
+  window.clearTimeout(pauseId);
+  if (current) {
+    current.slots.forEach((slot) => {
+      slot.node.data = slot.full;
+    });
+    current.unit.style.minHeight = '';
+    current = null;
+  }
+
+  document.querySelectorAll<HTMLElement>(`.${PENDING_CLASS}`).forEach((unit) => {
+    if (unit.getBoundingClientRect().top < window.innerHeight) {
+      observer?.unobserve(unit);
+      markStreamed(unit);
+    }
+  });
+  queue.forEach(markStreamed);
+  queue = [];
+  streaming = false;
+  saveSeen();
+}
+
+function trackScroll(): void {
+  const now = performance.now();
+  if (isFastScroll(window.scrollY - lastScroll.y, now - lastScroll.time)) {
+    fastUntil = now + FAST_SCROLL_HOLD_MS;
+    showReached();
+  }
+  lastScroll = { y: window.scrollY, time: now };
 }
 
 function reset(): void {
   observer?.disconnect();
   observer = null;
+  window.removeEventListener('scroll', trackScroll);
   cancelAnimationFrame(frameId);
   window.clearTimeout(pauseId);
+  current = null;
   queue = [];
   streaming = false;
 }
 
 // Units flagged in `streamed` appear complete, so a re-render never hides content again.
+// Once the effect has played in this tab, a reload shows everything at once.
 export function setupScrollReveal(streamed: readonly boolean[] = []): void {
   reset();
 
   const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  if (reduceMotion || !('IntersectionObserver' in window)) {
+  if (reduceMotion || !('IntersectionObserver' in window) || readSeen()) {
     return;
   }
 
-  const current = new IntersectionObserver(enqueue, { rootMargin: ROOT_MARGIN });
-  observer = current;
+  const watcher = new IntersectionObserver(enqueue, { rootMargin: ROOT_MARGIN });
+  observer = watcher;
+  lastScroll = { y: window.scrollY, time: performance.now() };
+  window.addEventListener('scroll', trackScroll, { passive: true });
 
   document.querySelectorAll<HTMLElement>(REVEAL_SELECTOR).forEach((target, index) => {
     if (streamed[index]) {
       target.setAttribute(STREAMED_ATTRIBUTE, '');
     } else {
       target.classList.add(PENDING_CLASS);
-      current.observe(target);
+      watcher.observe(target);
     }
   });
 }
