@@ -45,6 +45,7 @@ export type Content = {
     items: readonly EducationItem[];
   };
   presence: PresenceWording;
+  notFound: { error: string; home: string };
 };
 
 export const SECTION_ORDER: readonly SectionKey[] = [
@@ -224,6 +225,7 @@ const en: Content = {
     activityFallback: 'Active on',
     listeningTo: 'Listening to',
   },
+  notFound: { error: 'No such file or directory', home: 'back to marcopisco.com' },
 };
 
 const pt: Content = {
@@ -355,6 +357,7 @@ const pt: Content = {
     activityFallback: 'Ativo em',
     listeningTo: 'A ouvir',
   },
+  notFound: { error: 'Ficheiro ou pasta inexistente', home: 'voltar a marcopisco.com' },
 };
 
 export const CONTENT: Record<Language, Content> = { en, pt };

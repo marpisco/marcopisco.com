@@ -3,6 +3,7 @@ import { CONTENT, type Content } from './content';
 import {
   LANGUAGE_STORAGE_KEY,
   parseLanguage,
+  readSavedLanguage,
   resolveLanguage,
   type Language,
 } from './i18n';
@@ -20,14 +21,6 @@ const MESSAGE_GAP = 350;
 const app = document.querySelector<HTMLDivElement>('#app');
 if (!app) {
   throw new Error('Missing #app container');
-}
-
-function readSavedLanguage(): string | null {
-  try {
-    return localStorage.getItem(LANGUAGE_STORAGE_KEY);
-  } catch {
-    return null;
-  }
 }
 
 function saveLanguage(language: Language): void {

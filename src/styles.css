@@ -221,6 +221,11 @@ button:focus-visible,
   margin-top: 16px;
 }
 
+.error {
+  color: var(--danger);
+  overflow-wrap: anywhere;
+}
+
 .tip {
   position: relative;
   text-decoration: underline dotted;

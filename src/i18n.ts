@@ -22,3 +22,11 @@ export function detectLanguage(languages: readonly string[]): Language {
 export function resolveLanguage(saved: string | null, languages: readonly string[]): Language {
   return parseLanguage(saved) ?? detectLanguage(languages);
 }
+
+export function readSavedLanguage(): string | null {
+  try {
+    return localStorage.getItem(LANGUAGE_STORAGE_KEY);
+  } catch {
+    return null;
+  }
+}

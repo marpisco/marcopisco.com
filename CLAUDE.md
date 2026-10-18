@@ -44,6 +44,8 @@ Cloudflare Pages, Git integration on `marpisco/marcopisco.com` (the repo was ren
 
 New content units should carry `data-reveal` so they stream like the rest.
 
+`404.html` is a second Vite entry (`build.rollupOptions.input` in `vite.config.ts`) rendered by `src/not-found.ts` with `renderNotFound` from `render.ts`, so it shares the site's CSS and language detection. Cloudflare Pages serves it for any unknown path, so keep Vite's `base: '/'` and its absolute asset URLs. Without a top-level `404.html`, Pages would fall back to single-page-app mode and answer every unknown URL with the homepage and a 200.
+
 ## Content rules
 
 The page copy was reviewed line by line with Marco. Keep these when editing:

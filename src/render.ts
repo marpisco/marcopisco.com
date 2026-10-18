@@ -18,8 +18,9 @@ export type RenderOptions = {
 };
 
 const CONTACT_LABEL_WIDTH = 10;
+const HOME_PATH = '/';
 
-function escapeHtml(text: string): string {
+export function escapeHtml(text: string): string {
   return text
     .replaceAll('&', '&amp;')
     .replaceAll('<', '&lt;')
@@ -172,5 +173,25 @@ export function renderPage(content: Content, options: RenderOptions): string {
     ${renderWork(content)}
     ${renderEducation(content)}
     ${renderContact(content)}
+  </div>`;
+}
+
+export function formatCdError(path: string, reason: string): string {
+  return `bash: cd: ${path}: ${reason}`;
+}
+
+export function renderNotFound(content: Content, path: string): string {
+  const { error, home } = content.notFound;
+  return `
+  <div class="page">
+    <nav class="nav" aria-label="${content.navLabel}">
+      <span class="nav-host">${PROMPT_HOST}</span>
+    </nav>
+    <section class="section">
+      <div><span class="prompt">$</span> cd ${escapeHtml(path)}</div>
+      <div class="error" role="alert">${escapeHtml(formatCdError(path, error))}</div>
+      <div><span class="prompt">$</span> cd ~ <a href="${HOME_PATH}">${muted('#')} ${escapeHtml(home)}</a></div>
+      <div class="final-prompt"><span class="prompt">$</span> <span class="cursor" aria-hidden="true"></span></div>
+    </section>
   </div>`;
 }
