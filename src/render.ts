@@ -15,7 +15,6 @@ import type { PresenceView } from './lanyard';
 export type RenderOptions = {
   language: Language;
   presence: PresenceView;
-  boot: boolean;
 };
 
 const CONTACT_LABEL_WIDTH = 10;
@@ -53,11 +52,11 @@ function renderNav(content: Content, language: Language): string {
     </nav>`;
 }
 
-function renderHero(presence: PresenceView, boot: boolean): string {
+function renderHero(presence: PresenceView): string {
   return `
-    <section class="section${boot ? ' boot' : ''}">
-      <div><span class="prompt">$</span> ${HERO_COMMAND}</div>
-      <h1 class="name">${NAME}</h1>
+    <section class="section">
+      <div data-reveal><span class="prompt">$</span> ${HERO_COMMAND}</div>
+      <h1 class="name" data-reveal>${NAME}</h1>
       <p class="subtitle"><span id="typed-subtitle"></span><span class="cursor" aria-hidden="true"></span></p>
       ${renderPresence(presence)}
     </section>`;
@@ -167,7 +166,7 @@ export function renderPage(content: Content, options: RenderOptions): string {
   return `
   <div class="page">
     ${renderNav(content, options.language)}
-    ${renderHero(options.presence, options.boot)}
+    ${renderHero(options.presence)}
     ${renderAbout(content)}
     ${renderStack(content)}
     ${renderWork(content)}

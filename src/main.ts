@@ -90,11 +90,10 @@ function createTypingLoop(getMessages: () => readonly string[]) {
 const content = (): Content => CONTENT[language];
 const typing = createTypingLoop(() => content().heroMessages);
 
-const draw = (boot: boolean): void => {
+const draw = (): void => {
   app.innerHTML = renderPage(content(), {
     language,
     presence: getPresenceView(presenceState, language),
-    boot,
   });
   document.documentElement.lang = content().htmlLang;
 };
@@ -107,7 +106,7 @@ const switchLanguage = (next: Language): void => {
   language = next;
   saveLanguage(language);
   const revealed = getRevealedFlags();
-  draw(false);
+  draw();
   setupScrollReveal(revealed);
   typing.restart();
   app.querySelector<HTMLElement>(`[data-language="${language}"]`)?.focus();
@@ -121,7 +120,7 @@ app.addEventListener('click', (event) => {
   }
 });
 
-draw(true);
+draw();
 setupScrollReveal();
 typing.restart();
 startPresence((state) => {
