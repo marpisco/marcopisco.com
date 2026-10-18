@@ -41,6 +41,25 @@ export type SnakeWording = {
   quit: string;
 };
 
+export type AwesomeProject = {
+  repo: string;
+  description: string;
+};
+
+export type AwesomeCategory = {
+  name: string;
+  projects: readonly AwesomeProject[];
+};
+
+export type AwesomeWording = {
+  title: string;
+  command: string;
+  intro: string;
+  home: string;
+  viewOnGithub: string;
+  categories: readonly AwesomeCategory[];
+};
+
 export type Content = {
   htmlLang: string;
   navLabel: string;
@@ -58,6 +77,7 @@ export type Content = {
   presence: PresenceWording;
   notFound: { error: string; home: string };
   snake: SnakeWording;
+  awesome: AwesomeWording;
 };
 
 export const SECTION_ORDER: readonly SectionKey[] = [
@@ -72,6 +92,8 @@ export const PROMPT_HOST = 'marco@marcopisco.com:~';
 export const HERO_COMMAND = 'whoami';
 export const SNAKE_COMMAND = './snake';
 export const NAME = 'Marco Pisco';
+export const AWESOME_DIR = 'awesome';
+export const GITHUB_URL = 'https://github.com';
 
 export const STACK = [
   'git',
@@ -111,6 +133,19 @@ function tip(id: string, label: string, text: string, href?: string): string {
 const PAP_TIP = tip('pap-tip', 'PAP', 'Prova de Aptidão Profissional');
 const LED_TIP = tip('led-tip', 'LED', 'Laboratórios de Educação Digital', 'https://led.dge.medu.pt/');
 const CLASSLINK_LINK = { href: 'https://github.com/marpisco/ClassLink', label: 'github.com/marpisco/ClassLink' };
+
+// Placeholder list until the featured projects are chosen.
+const PLACEHOLDER_TEXT =
+  'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.';
+const PLACEHOLDER_REPOS = {
+  selfHosted: ['marpisco/ClassLink', 'jellyfin/jellyfin', 'immich-app/immich'],
+  devTools: ['oven-sh/bun', 'vitejs/vite', 'BurntSushi/ripgrep'],
+  networking: ['caddyserver/caddy', 'tailscale/tailscale'],
+};
+
+function placeholderProjects(repos: readonly string[]): AwesomeProject[] {
+  return repos.map((repo) => ({ repo, description: PLACEHOLDER_TEXT }));
+}
 
 const en: Content = {
   htmlLang: 'en',
@@ -251,6 +286,18 @@ const en: Content = {
     controls: 'arrows/wasd move · space start/pause · esc quit',
     touchControls: 'swipe to move · tap to start/pause',
     quit: 'quit',
+  },
+  awesome: {
+    title: 'Awesome projects',
+    command: 'cat README.md',
+    intro: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Things I built and things I love.',
+    home: 'cd ~',
+    viewOnGithub: 'view on github →',
+    categories: [
+      { name: 'self-hosted', projects: placeholderProjects(PLACEHOLDER_REPOS.selfHosted) },
+      { name: 'dev-tools', projects: placeholderProjects(PLACEHOLDER_REPOS.devTools) },
+      { name: 'networking', projects: placeholderProjects(PLACEHOLDER_REPOS.networking) },
+    ],
   },
 };
 
@@ -393,6 +440,18 @@ const pt: Content = {
     controls: 'setas/wasd mover · espaço começar/pausar · esc sair',
     touchControls: 'desliza para mover · toca para começar/pausar',
     quit: 'sair',
+  },
+  awesome: {
+    title: 'Projetos incríveis',
+    command: 'cat LEIA-ME.md',
+    intro: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Coisas que fiz e coisas de que gosto.',
+    home: 'cd ~',
+    viewOnGithub: 'ver no github →',
+    categories: [
+      { name: 'auto-alojados', projects: placeholderProjects(PLACEHOLDER_REPOS.selfHosted) },
+      { name: 'ferramentas-dev', projects: placeholderProjects(PLACEHOLDER_REPOS.devTools) },
+      { name: 'redes', projects: placeholderProjects(PLACEHOLDER_REPOS.networking) },
+    ],
   },
 };
 

@@ -217,6 +217,54 @@ button:focus-visible,
   white-space: pre;
 }
 
+.cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 16px;
+  margin-top: 8px;
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 16px;
+  border: 1px solid var(--tooltip-border);
+  background: var(--tooltip-bg);
+}
+
+.card-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.card-img {
+  flex: none;
+  width: 40px;
+  height: 40px;
+  background: var(--tooltip-border);
+}
+
+.card-title {
+  color: var(--heading);
+  font-weight: 700;
+}
+
+.stars {
+  color: var(--date);
+  font-weight: 400;
+}
+
+.card-owner,
+.card-link {
+  font-size: 13px;
+}
+
+.card-owner {
+  color: var(--muted);
+}
+
 .final-prompt {
   margin-top: 16px;
 }
@@ -359,6 +407,10 @@ button:focus-visible,
 }
 
 @media (max-width: 480px) {
+  .cards {
+    grid-template-columns: 1fr;
+  }
+
   .contact {
     white-space: pre-wrap;
     overflow-wrap: anywhere;

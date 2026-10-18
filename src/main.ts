@@ -1,10 +1,10 @@
 import './styles.css';
 import { CONTENT, type Content } from './content';
 import {
-  LANGUAGE_STORAGE_KEY,
-  parseLanguage,
+  listenForLanguageClicks,
   readSavedLanguage,
   resolveLanguage,
+  saveLanguage,
   type Language,
 } from './i18n';
 import { isKonami, pushKey } from './konami';
@@ -24,14 +24,6 @@ const MESSAGE_GAP = 350;
 const app = document.querySelector<HTMLDivElement>('#app');
 if (!app) {
   throw new Error('Missing #app container');
-}
-
-function saveLanguage(language: Language): void {
-  try {
-    localStorage.setItem(LANGUAGE_STORAGE_KEY, language);
-  } catch {
-    // The choice still applies to the current page when storage is unavailable.
-  }
 }
 
 let language = resolveLanguage(readSavedLanguage(), navigator.languages ?? [navigator.language]);
@@ -108,13 +100,7 @@ const switchLanguage = (next: Language): void => {
   app.querySelector<HTMLElement>(`[data-language="${language}"]`)?.focus();
 };
 
-app.addEventListener('click', (event) => {
-  const button = (event.target as Element).closest<HTMLElement>('[data-language]');
-  const next = parseLanguage(button?.dataset.language ?? null);
-  if (next) {
-    switchLanguage(next);
-  }
-});
+listenForLanguageClicks(app, switchLanguage);
 
 let recentKeys: string[] = [];
 const trackKey = (key: string): void => {
