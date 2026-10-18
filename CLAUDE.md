@@ -62,6 +62,7 @@ The page copy was reviewed line by line with Marco. Keep these when editing:
   - Media work is described generically as school events and news segments. No Erasmus mention.
   - In the student union, Marco was a Vogal (board member): audio, event help, small logistical and admin tasks.
 - Abbreviations that need explaining use the custom tooltip (`tip()`), never a `title` attribute.
+- Every link that leaves the page (other sites, `mailto:`) opens in a new tab: add `NEW_TAB` from `content.ts`. In-page anchors (`#about`) and the 404 page's link home stay in the same tab.
 
 ## Animations
 
