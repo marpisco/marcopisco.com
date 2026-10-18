@@ -1,6 +1,7 @@
 import { SNAKE_COMMAND, type SnakeWording } from './content';
 import { escapeHtml } from './render';
 import { playSound } from './sfx';
+import { listenForGestures } from './swipe';
 import {
   GLYPHS,
   createGame,
@@ -17,6 +18,7 @@ const START_TICK_MS = 130;
 const MIN_TICK_MS = 60;
 const TICK_STEP_MS = 3;
 const MAX_QUEUED_TURNS = 2;
+const TOUCH_QUERY = '(pointer: coarse)';
 
 const KEY_DIRECTIONS: Record<string, Direction> = {
   arrowup: 'up',
@@ -58,12 +60,16 @@ export function openSnake(wording: SnakeWording): void {
   overlay.setAttribute('aria-modal', 'true');
   overlay.setAttribute('aria-label', wording.label);
   overlay.tabIndex = -1;
+  const controls = window.matchMedia(TOUCH_QUERY).matches ? wording.touchControls : wording.controls;
   overlay.innerHTML = `
     <div class="snake-window">
-      <div><span class="prompt">$</span> ${SNAKE_COMMAND}</div>
+      <div class="snake-header">
+        <span><span class="prompt">$</span> ${SNAKE_COMMAND}</span>
+        <button type="button" class="snake-quit">${escapeHtml(wording.quit)}</button>
+      </div>
       <pre class="snake-board"></pre>
       <div class="snake-status"><span class="date"></span><span class="muted"></span></div>
-      <div class="muted">${escapeHtml(wording.controls)}</div>
+      <div class="muted">${escapeHtml(controls)}</div>
     </div>`;
 
   const board = overlay.querySelector('.snake-board') as HTMLElement;
@@ -136,6 +142,13 @@ export function openSnake(wording: SnakeWording): void {
     run();
   };
 
+  const steer = (direction: Direction): void => {
+    queueTurn(direction);
+    if (phase === 'ready') {
+      run();
+    }
+  };
+
   const onKeyDown = (event: KeyboardEvent): void => {
     const key = event.key.toLowerCase();
     const direction = KEY_DIRECTIONS[key];
@@ -145,10 +158,7 @@ export function openSnake(wording: SnakeWording): void {
     } else if (key === ' ') {
       onSpace();
     } else if (direction) {
-      queueTurn(direction);
-      if (phase === 'ready') {
-        run();
-      }
+      steer(direction);
     } else {
       return;
     }
@@ -166,6 +176,17 @@ export function openSnake(wording: SnakeWording): void {
   };
 
   document.addEventListener('keydown', onKeyDown);
+  overlay.querySelector('.snake-quit')?.addEventListener('click', () => close?.());
+  listenForGestures(overlay, (gesture, event) => {
+    if ((event.target as Element).closest('button')) {
+      return;
+    }
+    if (gesture === 'tap') {
+      onSpace();
+    } else {
+      steer(gesture);
+    }
+  });
   document.body.append(overlay);
   document.body.classList.add('snake-open');
   overlay.focus();

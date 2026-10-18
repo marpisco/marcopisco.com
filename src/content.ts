@@ -37,6 +37,8 @@ export type SnakeWording = {
   paused: string;
   gameOver: string;
   controls: string;
+  touchControls: string;
+  quit: string;
 };
 
 export type Content = {
@@ -240,10 +242,12 @@ const en: Content = {
   snake: {
     label: 'Snake game',
     score: 'score',
-    ready: 'press space or an arrow to start',
-    paused: 'paused · space to resume',
-    gameOver: 'game over · space to retry',
-    controls: 'arrows/wasd move · space pause · esc quit',
+    ready: 'ready',
+    paused: 'paused',
+    gameOver: 'game over',
+    controls: 'arrows/wasd move · space start/pause · esc quit',
+    touchControls: 'swipe to move · tap to start/pause',
+    quit: 'quit',
   },
 };
 
@@ -380,10 +384,12 @@ const pt: Content = {
   snake: {
     label: 'Jogo da cobra',
     score: 'pontos',
-    ready: 'carrega no espaço ou numa seta para começar',
-    paused: 'em pausa · espaço para continuar',
-    gameOver: 'fim do jogo · espaço para recomeçar',
-    controls: 'setas/wasd mover · espaço pausa · esc sair',
+    ready: 'pronto',
+    paused: 'em pausa',
+    gameOver: 'fim do jogo',
+    controls: 'setas/wasd mover · espaço começar/pausar · esc sair',
+    touchControls: 'desliza para mover · toca para começar/pausar',
+    quit: 'sair',
   },
 };
 

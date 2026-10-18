@@ -18,6 +18,10 @@ describe('konami code', () => {
     expect(isKonami(type(['x', 'ArrowUp', ...KEYS]))).toBe(true);
   });
 
+  test('matches swipes followed by two taps', () => {
+    expect(isKonami(type([...KEYS.slice(0, 8), 'tap', 'tap']))).toBe(true);
+  });
+
   test('rejects a wrong key in the middle', () => {
     const keys = [...KEYS];
     keys[4] = 'ArrowRight';
