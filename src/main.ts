@@ -7,10 +7,13 @@ import {
   resolveLanguage,
   type Language,
 } from './i18n';
+import { isKonami, pushKey } from './konami';
 import { getPresenceView, type PresenceState } from './lanyard';
 import { startPresence } from './presence';
 import { renderPage, updatePresence } from './render';
 import { getRevealedFlags, setupScrollReveal } from './reveal';
+import { listenForGestures } from './swipe';
+import { isSnakeOpen, openSnake } from './snake-game';
 import { INITIAL_TYPING_STATE, nextTypingState, type TypingState } from './typing';
 
 const TYPING_DELAY = 48;
@@ -112,6 +115,22 @@ app.addEventListener('click', (event) => {
     switchLanguage(next);
   }
 });
+
+let recentKeys: string[] = [];
+const trackKey = (key: string): void => {
+  if (isSnakeOpen()) {
+    return;
+  }
+
+  recentKeys = pushKey(recentKeys, key);
+  if (isKonami(recentKeys)) {
+    recentKeys = [];
+    openSnake(content().snake);
+  }
+};
+
+document.addEventListener('keydown', (event) => trackKey(event.key));
+listenForGestures(document, (gesture) => trackKey(gesture === 'tap' ? 'tap' : `arrow${gesture}`));
 
 draw();
 setupScrollReveal();

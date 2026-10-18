@@ -30,6 +30,17 @@ export type PresenceWording = {
   listeningTo: string;
 };
 
+export type SnakeWording = {
+  label: string;
+  score: string;
+  ready: string;
+  paused: string;
+  gameOver: string;
+  controls: string;
+  touchControls: string;
+  quit: string;
+};
+
 export type Content = {
   htmlLang: string;
   navLabel: string;
@@ -46,6 +57,7 @@ export type Content = {
   };
   presence: PresenceWording;
   notFound: { error: string; home: string };
+  snake: SnakeWording;
 };
 
 export const SECTION_ORDER: readonly SectionKey[] = [
@@ -58,6 +70,7 @@ export const SECTION_ORDER: readonly SectionKey[] = [
 
 export const PROMPT_HOST = 'marco@marcopisco.com:~';
 export const HERO_COMMAND = 'whoami';
+export const SNAKE_COMMAND = './snake';
 export const NAME = 'Marco Pisco';
 
 export const STACK = [
@@ -226,6 +239,16 @@ const en: Content = {
     listeningTo: 'Listening to',
   },
   notFound: { error: 'No such file or directory', home: 'back to marcopisco.com' },
+  snake: {
+    label: 'Snake game',
+    score: 'score',
+    ready: 'ready',
+    paused: 'paused',
+    gameOver: 'game over',
+    controls: 'arrows/wasd move · space start/pause · esc quit',
+    touchControls: 'swipe to move · tap to start/pause',
+    quit: 'quit',
+  },
 };
 
 const pt: Content = {
@@ -358,6 +381,16 @@ const pt: Content = {
     listeningTo: 'A ouvir',
   },
   notFound: { error: 'Ficheiro ou pasta inexistente', home: 'voltar a marcopisco.com' },
+  snake: {
+    label: 'Jogo da cobra',
+    score: 'pontos',
+    ready: 'pronto',
+    paused: 'em pausa',
+    gameOver: 'fim do jogo',
+    controls: 'setas/wasd mover · espaço começar/pausar · esc sair',
+    touchControls: 'desliza para mover · toca para começar/pausar',
+    quit: 'sair',
+  },
 };
 
 export const CONTENT: Record<Language, Content> = { en, pt };
