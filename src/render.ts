@@ -1,4 +1,5 @@
 import {
+  AWESOME_DIR,
   CONTACT_ROWS,
   HERO_COMMAND,
   NAME,
@@ -6,10 +7,13 @@ import {
   PROMPT_HOST,
   SECTION_ORDER,
   STACK,
+  type AwesomeCategory,
+  type AwesomeProject,
   type Content,
   type EducationItem,
   type WorkEntry,
 } from './content';
+import { avatarUrl, formatStars, repoUrl, type StarCount } from './github';
 import { LANGUAGES, type Language } from './i18n';
 import type { PresenceView } from './lanyard';
 
@@ -37,11 +41,7 @@ function command(text: string): string {
   return `<div data-reveal><span class="prompt">$</span> ${escapeHtml(text)}</div>`;
 }
 
-function renderNav(content: Content, language: Language): string {
-  const links = SECTION_ORDER.map((key) => {
-    const { id } = content.sections[key];
-    return `<a href="#${id}">./${id}</a>`;
-  }).join('');
+function renderNav(content: Content, language: Language, host: string, links: string): string {
   const buttons = LANGUAGES.map(
     (code) =>
       `<button type="button" data-language="${code}" aria-pressed="${code === language}">${code}</button>`,
@@ -49,9 +49,16 @@ function renderNav(content: Content, language: Language): string {
 
   return `
     <nav class="nav" aria-label="${content.navLabel}">
-      <span class="nav-host">${PROMPT_HOST}</span>${links}
+      <span class="nav-host">${host}</span>${links}
       <span class="lang" role="group" aria-label="${content.languageLabel}">${buttons}</span>
     </nav>`;
+}
+
+function renderSectionLinks(content: Content): string {
+  return SECTION_ORDER.map((key) => {
+    const { id } = content.sections[key];
+    return `<a href="#${id}">./${id}</a>`;
+  }).join('');
 }
 
 function renderHero(presence: PresenceView): string {
@@ -167,7 +174,7 @@ function renderContact(content: Content): string {
 export function renderPage(content: Content, options: RenderOptions): string {
   return `
   <div class="page">
-    ${renderNav(content, options.language)}
+    ${renderNav(content, options.language, PROMPT_HOST, renderSectionLinks(content))}
     ${renderHero(options.presence)}
     ${renderAbout(content)}
     ${renderStack(content)}
@@ -195,4 +202,56 @@ export function renderNotFound(content: Content, path: string): string {
       <div class="final-prompt"><span class="prompt">$</span> <span class="cursor" aria-hidden="true"></span></div>
     </section>
   </div>`;
+}
+
+export type StarCounts = ReadonlyMap<string, StarCount>;
+
+function renderProject(project: AwesomeProject, content: Content, stars: StarCounts): string {
+  const [owner, name] = project.repo.split('/');
+  const { viewOnGithub } = content.awesome;
+  return `
+        <article class="card" data-reveal>
+          <div class="card-head">
+            <img class="card-img" src="${avatarUrl(project.repo)}" alt="" width="40" height="40" loading="lazy" />
+            <div>
+              <div class="card-title">${escapeHtml(name)} <span class="stars">• ★ <span data-stars="${escapeHtml(project.repo)}">${formatStars(stars.get(project.repo))}</span></span></div>
+              <div class="card-owner">${escapeHtml(owner)}</div>
+            </div>
+          </div>
+          <a class="card-link" href="${repoUrl(project.repo)}" ${NEW_TAB}>${escapeHtml(viewOnGithub)}</a>
+          <p>${escapeHtml(project.description)}</p>
+        </article>`;
+}
+
+function renderCategory(category: AwesomeCategory, content: Content, stars: StarCounts): string {
+  const projects = category.projects.map((project) => renderProject(project, content, stars)).join('');
+  return `
+    <section class="section">
+      ${command(`ls ${category.name}/`)}
+      <div class="cards">${projects}
+      </div>
+    </section>`;
+}
+
+export function renderAwesome(content: Content, language: Language, stars: StarCounts): string {
+  const { title, command: text, intro, home, categories } = content.awesome;
+  const homeLink = `<a href="${HOME_PATH}">${escapeHtml(home)}</a>`;
+  return `
+  <div class="page">
+    ${renderNav(content, language, `${PROMPT_HOST}/${AWESOME_DIR}`, homeLink)}
+    <section class="section">
+      ${command(text)}
+      <h1 class="name" data-reveal>${escapeHtml(title)}</h1>
+      <p class="subtitle" data-reveal>${escapeHtml(intro)}</p>
+    </section>
+    ${categories.map((category) => renderCategory(category, content, stars)).join('')}
+  </div>`;
+}
+
+export function updateStars(repo: string, count: StarCount): void {
+  document.querySelectorAll<HTMLElement>('[data-stars]').forEach((label) => {
+    if (label.dataset.stars === repo) {
+      label.textContent = formatStars(count);
+    }
+  });
 }

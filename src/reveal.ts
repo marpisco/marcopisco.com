@@ -1,5 +1,5 @@
 const REVEAL_SELECTOR = '[data-reveal]';
-const SKIP_SELECTOR = '[role="tooltip"], #typed-subtitle, #presence';
+const SKIP_SELECTOR = '[role="tooltip"], #typed-subtitle, #presence, [data-stars]';
 const ROOT_MARGIN = '0px 0px -10% 0px';
 const CHARS_PER_SECOND = 1800;
 const UNIT_PAUSE_MS = 30;
