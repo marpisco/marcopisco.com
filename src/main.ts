@@ -7,10 +7,12 @@ import {
   resolveLanguage,
   type Language,
 } from './i18n';
+import { isKonami, pushKey } from './konami';
 import { getPresenceView, type PresenceState } from './lanyard';
 import { startPresence } from './presence';
 import { renderPage, updatePresence } from './render';
 import { getRevealedFlags, setupScrollReveal } from './reveal';
+import { isSnakeOpen, openSnake } from './snake-game';
 import { INITIAL_TYPING_STATE, nextTypingState, type TypingState } from './typing';
 
 const TYPING_DELAY = 48;
@@ -110,6 +112,19 @@ app.addEventListener('click', (event) => {
   const next = parseLanguage(button?.dataset.language ?? null);
   if (next) {
     switchLanguage(next);
+  }
+});
+
+let recentKeys: string[] = [];
+document.addEventListener('keydown', (event) => {
+  if (isSnakeOpen()) {
+    return;
+  }
+
+  recentKeys = pushKey(recentKeys, event.key);
+  if (isKonami(recentKeys)) {
+    recentKeys = [];
+    openSnake(content().snake);
   }
 });
 

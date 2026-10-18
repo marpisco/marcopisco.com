@@ -277,6 +277,59 @@ button:focus-visible,
   visibility: hidden;
 }
 
+.snake-open {
+  overflow: hidden;
+}
+
+.snake {
+  position: fixed;
+  inset: 0;
+  z-index: 2;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background: var(--bg);
+}
+
+.snake:focus {
+  outline: none;
+}
+
+.snake-window {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.snake-board {
+  margin: 0;
+  font: inherit;
+  /* 51 columns of about 0.6em each must fit beside the overlay padding. */
+  font-size: min(15px, calc((100vw - 48px) / 31));
+  line-height: 1.2;
+  color: var(--muted);
+}
+
+.snake-body {
+  color: var(--accent);
+}
+
+.snake-head {
+  color: var(--heading);
+  font-weight: 700;
+}
+
+.snake-food {
+  color: var(--date);
+}
+
+.snake-status {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 24px;
+}
+
 @keyframes blink {
   50% {
     opacity: 0;
