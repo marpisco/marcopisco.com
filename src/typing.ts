@@ -6,13 +6,6 @@ export interface TypingState {
   direction: TypingDirection;
 }
 
-export const HERO_MESSAGES = [
-  'Developer and System Administrator based in Portugal.',
-  'Building secure infrastructure and reliable platforms.',
-  'Automating systems for dependable operations.',
-  'Delivering practical software from code to production.',
-] as const;
-
 export const INITIAL_TYPING_STATE: TypingState = {
   messageIndex: 0,
   visibleCharacters: 0,

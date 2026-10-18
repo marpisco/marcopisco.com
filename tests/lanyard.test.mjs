@@ -1,5 +1,9 @@
 import { describe, expect, test } from 'bun:test';
-import { getPresenceActivity, getStatusLabel } from '../src/lanyard.ts';
+import {
+  getPresenceActivity,
+  getPresenceView,
+  getStatusLabel,
+} from '../src/lanyard.ts';
 
 describe('Lanyard presence formatting', () => {
   test('formats Discord status labels', () => {
@@ -47,5 +51,65 @@ describe('Lanyard presence formatting', () => {
         spotify: null,
       }),
     ).toBeNull();
+  });
+
+  test('formats Portuguese status labels', () => {
+    expect(getStatusLabel('online', 'pt')).toBe('Online');
+    expect(getStatusLabel('idle', 'pt')).toBe('Ausente');
+    expect(getStatusLabel('dnd', 'pt')).toBe('Não incomodar');
+    expect(getStatusLabel('offline', 'pt')).toBe('Offline');
+  });
+
+  test('formats Portuguese activities', () => {
+    expect(
+      getPresenceActivity(
+        { activities: [], spotify: { song: 'Satellite', artist: 'Måneskin' } },
+        'pt',
+      ),
+    ).toBe('A ouvir Satellite — Måneskin');
+    expect(
+      getPresenceActivity(
+        {
+          activities: [
+            { type: 0, name: 'Visual Studio Code', details: 'A editar main.ts' },
+            { type: 3, name: 'YouTube' },
+            { type: 9, name: 'Other' },
+          ],
+          spotify: null,
+        },
+        'pt',
+      ),
+    ).toBe('A jogar Visual Studio Code — A editar main.ts · A ver YouTube');
+    expect(getPresenceActivity({ activities: [{ type: 9, name: 'Other' }], spotify: null }, 'pt')).toBe(
+      'Ativo em Other',
+    );
+  });
+
+  test('builds the lowercase presence line in both languages', () => {
+    const presence = {
+      discord_status: 'online',
+      activities: [],
+      spotify: { song: 'Satellite', artist: 'Måneskin' },
+    };
+    expect(getPresenceView({ kind: 'ready', presence })).toEqual({
+      status: 'online',
+      text: 'discord · online · listening to Satellite — Måneskin',
+    });
+    expect(getPresenceView({ kind: 'ready', presence }, 'pt').text).toBe(
+      'discord · online · a ouvir Satellite — Måneskin',
+    );
+    expect(getPresenceView({ kind: 'ready', presence: { ...presence, spotify: null, discord_status: 'dnd' } }, 'pt').text).toBe(
+      'discord · não incomodar',
+    );
+  });
+
+  test('describes connecting and unavailable states', () => {
+    expect(getPresenceView({ kind: 'connecting' }).text).toBe('discord · connecting...');
+    expect(getPresenceView({ kind: 'connecting' }, 'pt').text).toBe('discord · a ligar...');
+    expect(getPresenceView({ kind: 'unavailable' }).text).toBe('discord · unavailable');
+    expect(getPresenceView({ kind: 'unavailable' }, 'pt')).toEqual({
+      status: 'offline',
+      text: 'discord · indisponível',
+    });
   });
 });
