@@ -1,699 +1,130 @@
 import './styles.css';
+import { CONTENT, type Content } from './content';
 import {
-  nextThemePreference,
-  parseThemePreference,
-  resolveTheme,
-  THEME_STORAGE_KEY,
-  type ThemePreference,
-} from './theme';
-import {
-  HERO_MESSAGES,
-  INITIAL_TYPING_STATE,
-  nextTypingState,
-  type TypingState,
-} from './typing';
-import {
-  getPresenceActivity,
-  getStatusLabel,
-  type LanyardPresence,
-} from './lanyard';
+  LANGUAGE_STORAGE_KEY,
+  parseLanguage,
+  resolveLanguage,
+  type Language,
+} from './i18n';
+import { getPresenceView, type PresenceState } from './lanyard';
+import { startPresence } from './presence';
+import { renderPage, updatePresence } from './render';
+import { getRevealedFlags, setupScrollReveal } from './reveal';
+import { INITIAL_TYPING_STATE, nextTypingState, type TypingState } from './typing';
 
-type Experience = {
-  years: string;
-  role: string;
-  company: string;
-  location?: string;
-  summary: string;
-  tags: string[];
-};
-
-type Education = {
-  years: string;
-  school: string;
-  program: string;
-  summary: string;
-  tags: string[];
-};
-
-const techStack = [
-  'Git',
-  'C#',
-  'Python',
-  'PHP',
-  '.NET Framework',
-  'HTML/CSS',
-  'Bootstrap',
-  'Arduino IDE',
-  'ERP Implementations',
-  'ERP Software',
-  'SQL',
-  'MySQL',
-  'PostgreSQL',
-  'Primavera ERP',
-  'SIP',
-  'Linux',
-  'Proxmox',
-  'Docker',
-  'Jenkins',
-  'TeamCity',
-  'YouTrack',
-  'Headscale',
-  'Cloudflare',
-  'Authentik',
-  'IIS',
-  'C++'
-];
-
-const LANYARD_USER_ID = '1060304285457448970';
-const LANYARD_REST_ENDPOINT = `https://api.lanyard.rest/v1/users/${LANYARD_USER_ID}`;
-const LANYARD_SOCKET_ENDPOINT = 'wss://api.lanyard.rest/socket';
-
-const experience: Experience[] = [
-  {
-    years: 'Jul 2026 - Present',
-    role: 'Developer',
-    company: 'Quantinfor - Consultoria Informática',
-    location: 'Malveira · Hybrid',
-    summary:
-      'Software Development for multiple environments, including PHC Web and Primavera ERP. Maintenance and creation of Software Projects. Development of internal tools and platforms, using Repository history tracking projects, such as Git. Building AI-assistants and AI-related integrations for internal products.',
-    tags: ['Informatics', 'Software Prototyping', 'Git', 'PHC Web', 'Primavera ERP'],
-  },
-  {
-    years: 'Oct 2025 - Present',
-    role: 'Head of Systems / System Administrator',
-    company: 'LunarLabs LLC',
-    location: 'Remote',
-    summary:
-      "Build and maintain the company's infrastructure: Proxmox hypervisors, Docker services and the developer platforms (Forgejo, CI runners, internal tools). Run the company VPN (Headscale), DNS in Cloudflare, password management (Vaultwarden) and monitoring (Grafana). Manage Microsoft 365 and Entra ID for Single Sign-On (SSO) and mail. Handle security hardening, off-site backups and staff access.",
-    tags: ['Informatics', 'Docker', 'Proxmox', 'Microsoft 365', 'Single Sign-On'],
-  },
-  {
-    years: 'Aug 2025 - Present',
-    role: 'System Administrator and Operations Manager',
-    company: 'Darkless Ltd.',
-    location: 'Remote',
-    summary:
-      'Run the infrastructure of a hosting company with its own network (AS197924): a Proxmox hypervisor cluster, Arista core switches and BGP peering with the datacenter. Manage the customer platforms (Pterodactyl game hosting, VPS and dedicated servers through TenantOS, Paymenter billing). Run the company VPN (Headscale), DNS (Cloudflare and PowerDNS), mail, off-site backups (Proxmox Backup Server) and monitoring (Grafana, Prometheus). Manage Microsoft 365 and Entra ID for Single Sign-On (SSO) and mail. Handle incident response, security hardening, customer support tickets and automations.',
-    tags: ['Server Administration', 'Proxmox', 'Pterodactyl', 'Microsoft 365', 'Automation'],
-  },
-  {
-    years: 'Feb 2025 - Oct 2026',
-    role: 'Senior System Administrator',
-    company: 'Scala Studios',
-    location: 'Remote',
-    summary:
-      'Managed security and infrastructure for a Minecraft network, including Proxmox hypervisors, game servers and developer platforms. Enforced 2FA across all accounts and put internal services and databases behind a private VPN (Headscale). Handled incident response, off-site backups and migrations between providers.',
-    tags: ['Infrastructure Management', 'Linux', 'Proxmox', 'TeamCity', 'YouTrack', 'Jenkins', 'Mailcow', 'Headscale'],
-  },
-  {
-    years: 'Jan 2026 - Apr 2026',
-    role: 'Software Developer Intern',
-    company: 'Quantinfor - Consultoria Informática',
-    location: 'Malveira · Hybrid',
-    summary: 'Software development internship focused on multiple environments and internal platform tooling.',
-    tags: ['Git', '.NET Framework', 'C#', 'Python', 'Software Prototyping'],
-  },
-  {
-    years: 'Apr 2025 - Jun 2025',
-    role: 'Software Developer (Internship)',
-    company: 'Visao Logica - Comercio Artigos de Informatica, Lda.',
-    summary:
-    'Worked on Primavera WebAPI and PEX Advanced extensibility (C# and Python), built middleware for WebAPI integrations, developed SIP/PBX and internal tooling concepts, configured Sophos Firewall, and implemented Primavera ERP synchronization flows.',
-    tags: ['C#', 'Python', 'PHP', 'SIP', 'PBX', 'Primavera ERP', 'Sophos Firewall'],
-  },
-  {
-    years: 'Apr 2023',
-    role: 'Volunteer',
-    company: 'Academia Digital para Pais - AEJICS',
-    summary:
-      'Volunteered in a program funded by the Portuguese Ministry of Education and E-Redes where students taught parents foundational digital literacy skills.',
-    tags: ['Volunteer', 'Digital Literacy', 'Community'],
-  }
-];
-
-const education: Education[] = [
-  {
-    years: 'Sep 2023 - Jul 2026',
-    school: 'Agrupamento de Escolas Joaquim Inacio da Cruz Sobral',
-    program: 'Professional Course, IT Systems',
-    summary:
-      'Grade 12th. Advanced computer training including Microsoft Office (Excel with VBA, Word, PowerPoint), web development (HTML/CSS), computer architecture, TCP/IP networking, and Windows installation/setup. Hands-on Windows Server 2022 Active Directory work with user management, file sharing, GPOs, and security groups. ERP deployment with Primavera, programming in C++, C#, .NET, Java, and Python, SQL database management (MySQL, MariaDB, PostgreSQL), web server administration with Apache and IIS, and development practice with tools such as Arduino IDE and PHP.',
-    tags: [
-      'Git',
-      'Informatics',
-      'Information Technology Training',
-      'Programming Languages',
-      'Programming',
-      'Fundamentals',
-      'Computer Architecture',
-      'Mathematics',
-      'Windows Server 2022',
-      'Active Directory',
-      'TCP/IP',
-      'GPO',
-      'File Sharing',
-      'Primavera ERP',
-      'SQL',
-      'MySQL',
-      'MariaDB',
-      'PostgreSQL',
-      'Apache',
-      'IIS',
-      'Python',
-      'PHP',
-      'Arduino IDE',
-      'C++',
-      'C#',
-      '.NET Framework',
-      'Java',
-      'VBA',
-    ],
-  },
-];
+const TYPING_DELAY = 48;
+const DELETING_DELAY = 28;
+const MESSAGE_HOLD = 1600;
+const MESSAGE_GAP = 350;
 
 const app = document.querySelector<HTMLDivElement>('#app');
-
 if (!app) {
   throw new Error('Missing #app container');
 }
 
-app.innerHTML = `
-  <div class="page-bg"></div>
-  <header class="topbar">
-    <nav class="container nav-wrap" aria-label="Primary navigation">
-      <a class="brand" href="#home"><span>&lt;</span>marcopisco.com<span> /&gt;</span></a>
-      <p class="repository-path" aria-label="Current file">
-        portfolio <span>/</span> src <span>/</span> <strong>Program.cs</strong>
-      </p>
-      <div class="nav-actions">
-        <div class="nav-links">
-          <a href="#about">About()</a>
-          <a href="#skills">TechStack</a>
-          <a href="#experience">Experience</a>
-          <a href="#education">Education</a>
-          <a href="#contact">Contact()</a>
-        </div>
-        <button id="theme-toggle" class="theme-toggle" type="button">
-          <span id="theme-icon" aria-hidden="true">◐</span>
-          <span id="theme-label">System</span>
-        </button>
-      </div>
-    </nav>
-  </header>
-
-  <main class="container page-shell">
-    <section id="home" class="workspace-window hero-window">
-      <div class="workspace-bar" aria-hidden="true">
-        <span class="window-dot"></span>
-        <span class="window-dot"></span>
-        <span class="window-dot"></span>
-        <span class="file-tab">Home.cs</span>
-      </div>
-      <div class="hero">
-        <div class="hero-copy">
-          <p class="code-comment">Portfolio entry point</p>
-          <div id="discord-presence" class="discord-presence" data-status="offline" data-state="loading" aria-live="polite">
-            <span class="presence-indicator" aria-hidden="true"></span>
-            <span id="discord-presence-label">Discord · Connecting...</span>
-            <span id="discord-presence-activity" class="presence-activity hidden"></span>
-          </div>
-          <h1>
-            <span class="hero-declaration">string introduction =</span>
-            Hi, I am <strong>Marco Pisco</strong>.
-          </h1>
-          <p class="hero-subtitle">
-            <span class="typed-declaration" aria-hidden="true">
-              <span class="typed-keyword">string</span>
-              <span class="typed-variable">subtitle</span>
-              <span class="typed-operator"> = </span>
-              <span class="typed-string">&quot;<span id="typed-subtitle"></span><span class="typing-cursor"></span>&quot;</span>;
-            </span>
-            <span class="sr-only">${HERO_MESSAGES[0]}</span>
-          </p>
-          <div class="hero-actions">
-            <a class="code-button primary" href="#experience">View experience <span>→</span></a>
-            <a class="code-button" href="#contact">Get in touch</a>
-          </div>
-        </div>
-        <aside class="hero-media">
-          <div class="avatar-frame">
-            <img class="avatar" src="/images/marco-profile.png" alt="Marco Pisco" />
-          </div>
-          <pre class="profile-code" aria-label="Profile summary"><code><span>public class</span> Profile
-{
-  public string <strong>Role</strong> { get; init; } = "Developer";
-  public string <strong>Focus</strong> { get; init; } = "Systems";
-  public string <strong>Location</strong> { get; init; } = "Portugal";
-}</code></pre>
-        </aside>
-      </div>
-    </section>
-
-    <section class="workspace-window content-window">
-      <div class="workspace-bar" aria-hidden="true">
-        <span class="window-dot"></span>
-        <span class="window-dot"></span>
-        <span class="window-dot"></span>
-        <span class="file-tab">workspace</span>
-      </div>
-      <div class="workspace-layout">
-        <aside class="repository-explorer" aria-label="Portfolio Explorer">
-          <p class="explorer-heading">Explorer</p>
-          <p class="explorer-root">MARCOPISCO.COM</p>
-          <ul class="repository-tree">
-            <li><a class="tree-file csharp" href="#about">About.cs</a></li>
-            <li><a class="tree-file csharp" href="#skills">TechStack.cs</a></li>
-            <li><a class="tree-file csharp" href="#experience">Experience.cs</a></li>
-            <li><a class="tree-file markdown" href="#education">Education.md</a></li>
-            <li><a class="tree-file csharp" href="#contact">Contact.cs</a></li>
-          </ul>
-        </aside>
-
-        <div class="workspace-content">
-          <article id="about" class="code-section">
-            <p class="section-comment">About me</p>
-            <h2><span>public</span> About Me</h2>
-            <div class="about-copy">
-              <p>
-                I am a software developer and system administrator focused on
-                secure infrastructure, practical product delivery, and dependable operations.
-              </p>
-              <p>
-                I work across software engineering, systems administration, and security-focused
-                infrastructure, with a strong focus on reliability, automation, and maintainable operations.
-              </p>
-            </div>
-          </article>
-
-          <article id="skills" class="code-section">
-            <p class="section-comment">Tech stack</p>
-            <h2><span>List&lt;string&gt;</span> TechStack</h2>
-            <div class="skills">
-              ${techStack.map((skill) => `<span class="skill">${skill}</span>`).join('')}
-            </div>
-          </article>
-
-          <article id="experience" class="code-section">
-            <p class="section-comment">Experience records</p>
-            <h2><span>List&lt;Experience&gt;</span> Experience</h2>
-            <div class="records">
-              ${experience
-                .map(
-                  (item) => `
-                    <article class="record">
-                      <p class="record-date">${item.years}</p>
-                      <div class="record-content">
-                        <h3>${item.role}</h3>
-                        <p class="company">${item.company}</p>
-                        ${item.location ? `<p class="record-location">${item.location}</p>` : ''}
-                        <p class="summary">${item.summary}</p>
-                        <div class="tags">
-                          ${item.tags.map((tag) => `<span>${tag}</span>`).join('')}
-                        </div>
-                      </div>
-                    </article>
-                  `,
-                )
-                .join('')}
-            </div>
-          </article>
-
-          <article id="education" class="code-section">
-            <p class="section-comment">Education</p>
-            <h2><span>Read</span> Education.md</h2>
-            <div class="records">
-              ${education
-                .map(
-                  (item) => `
-                    <article class="record">
-                      <p class="record-date">${item.years}</p>
-                      <div class="record-content">
-                        <h3>${item.school}</h3>
-                        <p class="company">${item.program}</p>
-                        <p class="summary">${item.summary}</p>
-                        <div class="tags">
-                          ${item.tags.map((tag) => `<span>${tag}</span>`).join('')}
-                        </div>
-                      </div>
-                    </article>
-                  `,
-                )
-                .join('')}
-            </div>
-          </article>
-
-          <article id="contact" class="code-section contact-section">
-            <p class="section-comment">Contact</p>
-            <h2><span>await</span> GetInTouchAsync()</h2>
-            <p class="contact-copy">
-              If you need help with platform engineering, production hardening,
-              or full-stack delivery, I am available for collaborations.
-            </p>
-            <div class="contact-actions">
-              <a class="code-button primary" href="mailto:marco@marcopisco.com">Email</a>
-              <a class="code-button" href="https://www.linkedin.com/in/marco-p-440068329/" target="_blank" rel="noreferrer">LinkedIn</a>
-              <a class="code-button" href="https://github.com/marpisco" target="_blank" rel="noreferrer">GitHub</a>
-            </div>
-          </article>
-        </div>
-      </div>
-    </section>
-  </main>
-
-  <footer>
-    <div class="container footer-wrap">
-      <p>&copy; ${new Date().getFullYear()} Marco Pisco. All rights reserved.</p>
-    </div>
-  </footer>
-`;
-
-type LanyardRestResponse = {
-  success: boolean;
-  data?: LanyardPresence;
-};
-
-type LanyardSocketMessage = {
-  op: number;
-  t?: string;
-  d?: unknown;
-};
-
-function isLanyardPresence(value: unknown): value is LanyardPresence {
-  if (!value || typeof value !== 'object') {
-    return false;
-  }
-
-  const candidate = value as Partial<LanyardPresence>;
-  return typeof candidate.discord_status === 'string' && Array.isArray(candidate.activities);
-}
-
-function findPresence(value: unknown): LanyardPresence | null {
-  if (isLanyardPresence(value)) {
-    return value;
-  }
-
-  if (value && typeof value === 'object') {
-    const presence = (value as Record<string, unknown>)[LANYARD_USER_ID];
-    if (isLanyardPresence(presence)) {
-      return presence;
-    }
-  }
-
-  return null;
-}
-
-function renderLanyardPresence(presence: LanyardPresence): void {
-  const root = document.querySelector<HTMLElement>('#discord-presence');
-  const label = document.querySelector<HTMLElement>('#discord-presence-label');
-  const activity = document.querySelector<HTMLElement>('#discord-presence-activity');
-  if (!root || !label || !activity) {
-    return;
-  }
-
-  const activityText = getPresenceActivity(presence);
-  root.dataset.status = presence.discord_status;
-  root.dataset.state = 'ready';
-  label.textContent = `Discord · ${getStatusLabel(presence.discord_status)}`;
-
-  if (activityText) {
-    activity.textContent = activityText;
-    activity.classList.remove('hidden');
-  } else {
-    activity.textContent = '';
-    activity.classList.add('hidden');
-  }
-}
-
-function renderLanyardUnavailable(): void {
-  const root = document.querySelector<HTMLElement>('#discord-presence');
-  const label = document.querySelector<HTMLElement>('#discord-presence-label');
-  const activity = document.querySelector<HTMLElement>('#discord-presence-activity');
-  if (!root || !label || !activity) {
-    return;
-  }
-
-  root.dataset.status = 'offline';
-  root.dataset.state = 'unavailable';
-  label.textContent = 'Discord · Unavailable';
-  activity.textContent = '';
-  activity.classList.add('hidden');
-}
-
-async function loadLanyardPresence(): Promise<void> {
+function readSavedLanguage(): string | null {
   try {
-    const response = await fetch(LANYARD_REST_ENDPOINT);
-    if (!response.ok) {
-      throw new Error('Lanyard REST request failed');
-    }
-
-    const payload = (await response.json()) as LanyardRestResponse;
-    if (!payload.success || !isLanyardPresence(payload.data)) {
-      throw new Error('Lanyard returned no presence');
-    }
-
-    renderLanyardPresence(payload.data);
+    return localStorage.getItem(LANGUAGE_STORAGE_KEY);
   } catch {
-    renderLanyardUnavailable();
+    return null;
   }
 }
 
-function setupLanyardPresence(): void {
-  let socket: WebSocket | null = null;
-  let heartbeatId: number | null = null;
-  let reconnectId: number | null = null;
-  let stopped = false;
-
-  const clearHeartbeat = (): void => {
-    if (heartbeatId !== null) {
-      window.clearInterval(heartbeatId);
-      heartbeatId = null;
-    }
-  };
-
-  const scheduleReconnect = (): void => {
-    if (stopped || reconnectId !== null) {
-      return;
-    }
-
-    reconnectId = window.setTimeout(() => {
-      reconnectId = null;
-      connect();
-    }, 15_000);
-  };
-
-  function connect(): void {
-    if (stopped || typeof WebSocket === 'undefined') {
-      return;
-    }
-
-    socket = new WebSocket(LANYARD_SOCKET_ENDPOINT);
-    socket.addEventListener('open', () => {
-      socket?.send(JSON.stringify({ op: 2, d: { subscribe_to_id: LANYARD_USER_ID } }));
-    });
-    socket.addEventListener('message', (event: MessageEvent<string>) => {
-      let message: LanyardSocketMessage;
-      try {
-        message = JSON.parse(event.data) as LanyardSocketMessage;
-      } catch {
-        return;
-      }
-
-      if (message.op === 1 && message.d && typeof message.d === 'object') {
-        const heartbeatInterval = (message.d as { heartbeat_interval?: unknown }).heartbeat_interval;
-        if (typeof heartbeatInterval === 'number' && heartbeatInterval > 0) {
-          clearHeartbeat();
-          heartbeatId = window.setInterval(() => {
-            socket?.send(JSON.stringify({ op: 3, d: null }));
-          }, heartbeatInterval);
-        }
-        return;
-      }
-
-      if (message.op === 0 && (message.t === 'INIT_STATE' || message.t === 'PRESENCE_UPDATE')) {
-        const presence = findPresence(message.d);
-        if (presence) {
-          renderLanyardPresence(presence);
-        }
-      }
-    });
-    socket.addEventListener('close', () => {
-      clearHeartbeat();
-      scheduleReconnect();
-    });
-    socket.addEventListener('error', () => {
-      socket?.close();
-    });
-  }
-
-  window.addEventListener('beforeunload', () => {
-    stopped = true;
-    clearHeartbeat();
-    if (reconnectId !== null) {
-      window.clearTimeout(reconnectId);
-    }
-    socket?.close();
-  });
-
-  void loadLanyardPresence();
-  connect();
-}
-
-function setupScrollReveal(root: ParentNode = document): void {
-  const textTargets = Array.from(
-    root.querySelectorAll<HTMLElement>(
-      '.hero-copy h1, .hero-copy p, .discord-presence, .code-section h2, .about-copy p, .skill, .record, .code-button',
-    ),
-  );
-  const blockTargets = Array.from(
-    root.querySelectorAll<HTMLElement>(
-      '.hero-media, .avatar-frame, .code-section, .contact-actions',
-    ),
-  );
-  const targets = Array.from(new Set([...textTargets, ...blockTargets]));
-
-  if (targets.length === 0) {
-    return;
-  }
-
-  let textStagger = 0;
-  for (const target of textTargets) {
-    if (!target.classList.contains('reveal-text')) {
-      target.classList.add('reveal-text');
-      target.style.setProperty('--reveal-delay', `${Math.min(textStagger * 55, 260)}ms`);
-      textStagger += 1;
-    }
-  }
-
-  let blockStagger = 0;
-  for (const target of blockTargets) {
-    if (!target.classList.contains('reveal-block')) {
-      target.classList.add('reveal-block');
-      target.style.setProperty('--reveal-delay', `${Math.min(blockStagger * 70, 320)}ms`);
-      blockStagger += 1;
-    }
-  }
-
-  if (!('IntersectionObserver' in window)) {
-    for (const target of targets) {
-      target.classList.add('in-view');
-    }
-    return;
-  }
-
-  const observer = new IntersectionObserver(
-    (entries) => {
-      for (const entry of entries) {
-        if (entry.isIntersecting) {
-          entry.target.classList.add('in-view');
-          observer.unobserve(entry.target);
-        }
-      }
-    },
-    {
-      threshold: 0,
-      rootMargin: '0px 0px -4% 0px',
-    },
-  );
-
-  for (const target of targets) {
-    if (!target.classList.contains('in-view')) {
-      observer.observe(target);
-    }
+function saveLanguage(language: Language): void {
+  try {
+    localStorage.setItem(LANGUAGE_STORAGE_KEY, language);
+  } catch {
+    // The choice still applies to the current page when storage is unavailable.
   }
 }
 
-function setupTypingSubtitle(): void {
-  const subtitle = document.querySelector<HTMLElement>('#typed-subtitle');
-  const cursor = document.querySelector<HTMLElement>('.typing-cursor');
-  if (!subtitle || !cursor) {
-    return;
-  }
+let language = resolveLanguage(readSavedLanguage(), navigator.languages ?? [navigator.language]);
+let presenceState: PresenceState = { kind: 'connecting' };
 
-  const typingDelay = 48;
-  const deletingDelay = 28;
-  const messageHold = 1600;
-  const messageGap = 350;
+const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+
+function createTypingLoop(getMessages: () => readonly string[]) {
   let state: TypingState = { ...INITIAL_TYPING_STATE };
+  let timerId: number | undefined;
+
+  const currentText = (): string => {
+    const message = getMessages()[state.messageIndex];
+    return reducedMotion.matches ? message : message.slice(0, state.visibleCharacters);
+  };
 
   const render = (): void => {
-    const message = HERO_MESSAGES[state.messageIndex];
-    subtitle.textContent = message.slice(0, state.visibleCharacters);
-  };
-
-  const scheduleNextCharacter = (): void => {
-    const message = HERO_MESSAGES[state.messageIndex];
-    let delay = state.direction === 'typing' ? typingDelay : deletingDelay;
-
-    if (state.direction === 'typing' && state.visibleCharacters >= message.length) {
-      delay = messageHold;
-    } else if (state.direction === 'deleting' && state.visibleCharacters === 0) {
-      delay = messageGap;
+    const subtitle = document.querySelector<HTMLElement>('#typed-subtitle');
+    if (subtitle) {
+      subtitle.textContent = currentText();
     }
-
-    window.setTimeout(() => {
-      state = nextTypingState(state, HERO_MESSAGES);
-      render();
-      scheduleNextCharacter();
-    }, delay);
   };
 
-  render();
-  scheduleNextCharacter();
+  const getDelay = (): number => {
+    const message = getMessages()[state.messageIndex];
+    if (state.direction === 'typing') {
+      return state.visibleCharacters >= message.length ? MESSAGE_HOLD : TYPING_DELAY;
+    }
+    return state.visibleCharacters === 0 ? MESSAGE_GAP : DELETING_DELAY;
+  };
+
+  const schedule = (): void => {
+    timerId = window.setTimeout(() => {
+      state = nextTypingState(state, getMessages());
+      render();
+      schedule();
+    }, getDelay());
+  };
+
+  return {
+    restart(): void {
+      window.clearTimeout(timerId);
+      state = { ...INITIAL_TYPING_STATE };
+      render();
+      if (!reducedMotion.matches) {
+        schedule();
+      }
+    },
+  };
 }
 
-function setupThemeControl(): void {
-  const button = document.querySelector<HTMLButtonElement>('#theme-toggle');
-  const label = document.querySelector<HTMLElement>('#theme-label');
-  const icon = document.querySelector<HTMLElement>('#theme-icon');
-  if (!button || !label || !icon) {
+const content = (): Content => CONTENT[language];
+const typing = createTypingLoop(() => content().heroMessages);
+
+const draw = (boot: boolean): void => {
+  app.innerHTML = renderPage(content(), {
+    language,
+    presence: getPresenceView(presenceState, language),
+    boot,
+  });
+  document.documentElement.lang = content().htmlLang;
+};
+
+const switchLanguage = (next: Language): void => {
+  if (next === language) {
     return;
   }
 
-  const systemTheme = window.matchMedia('(prefers-color-scheme: dark)');
-  let preference: ThemePreference = 'system';
+  language = next;
+  saveLanguage(language);
+  const revealed = getRevealedFlags();
+  draw(false);
+  setupScrollReveal(revealed);
+  typing.restart();
+  app.querySelector<HTMLElement>(`[data-language="${language}"]`)?.focus();
+};
 
-  try {
-    preference = parseThemePreference(localStorage.getItem(THEME_STORAGE_KEY));
-  } catch {
-    preference = 'system';
+app.addEventListener('click', (event) => {
+  const button = (event.target as Element).closest<HTMLElement>('[data-language]');
+  const next = parseLanguage(button?.dataset.language ?? null);
+  if (next) {
+    switchLanguage(next);
   }
+});
 
-  const applyTheme = (): void => {
-    const resolved = resolveTheme(preference, systemTheme.matches);
-    document.documentElement.dataset.theme = resolved;
-    document.documentElement.style.colorScheme = resolved;
-    label.textContent = preference[0].toUpperCase() + preference.slice(1);
-    icon.textContent = preference === 'dark' ? '●' : preference === 'light' ? '○' : '◐';
-    button.setAttribute(
-      'aria-label',
-      `Theme: ${label.textContent}. Activate to change theme.`,
-    );
-  };
-
-  button.addEventListener('click', () => {
-    preference = nextThemePreference(preference);
-    try {
-      if (preference === 'system') {
-        localStorage.removeItem(THEME_STORAGE_KEY);
-      } else {
-        localStorage.setItem(THEME_STORAGE_KEY, preference);
-      }
-    } catch {
-      // Theme still works for the current page when storage is unavailable.
-    }
-    applyTheme();
-  });
-
-  systemTheme.addEventListener('change', () => {
-    if (preference === 'system') {
-      applyTheme();
-    }
-  });
-
-  applyTheme();
-}
-
-setupTypingSubtitle();
-setupThemeControl();
+draw(true);
 setupScrollReveal();
-setupLanyardPresence();
+typing.restart();
+startPresence((state) => {
+  presenceState = state;
+  updatePresence(getPresenceView(state, language));
+});

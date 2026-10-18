@@ -1,3 +1,6 @@
+import { CONTENT } from './content';
+import type { Language } from './i18n';
+
 export type LanyardActivity = {
   type: number;
   name: string;
@@ -18,35 +21,34 @@ export type LanyardPresence = {
 
 type PresenceActivityInput = Pick<LanyardPresence, 'activities' | 'spotify'>;
 
-const ACTIVITY_TYPE_LABELS: Record<number, string> = {
-  0: 'Playing',
-  1: 'Streaming',
-  2: 'Listening',
-  3: 'Watching',
-  5: 'Competing',
+export type PresenceState =
+  | { kind: 'connecting' }
+  | { kind: 'unavailable' }
+  | { kind: 'ready'; presence: LanyardPresence };
+
+export type PresenceView = {
+  status: string;
+  text: string;
 };
 
-export function getStatusLabel(status: string): string {
-  if (status === 'dnd') {
-    return 'Do Not Disturb';
-  }
-
-  if (status === 'idle') {
-    return 'Idle';
-  }
-
-  if (status === 'online') {
-    return 'Online';
-  }
-
-  return 'Offline';
+function isKnownStatus(status: string): status is keyof typeof CONTENT.en.presence.status {
+  return status in CONTENT.en.presence.status;
 }
 
-export function getPresenceActivity(presence: PresenceActivityInput): string | null {
+export function getStatusLabel(status: string, language: Language = 'en'): string {
+  const labels = CONTENT[language].presence.status;
+  return isKnownStatus(status) ? labels[status] : labels.offline;
+}
+
+export function getPresenceActivity(
+  presence: PresenceActivityInput,
+  language: Language = 'en',
+): string | null {
+  const wording = CONTENT[language].presence;
   const activities: string[] = [];
 
   if (presence.spotify?.song && presence.spotify.artist) {
-    activities.push(`Listening to ${presence.spotify.song} — ${presence.spotify.artist}`);
+    activities.push(`${wording.listeningTo} ${presence.spotify.song} — ${presence.spotify.artist}`);
   }
 
   for (const activity of presence.activities) {
@@ -58,7 +60,7 @@ export function getPresenceActivity(presence: PresenceActivityInput): string | n
       continue;
     }
 
-    const typeLabel = ACTIVITY_TYPE_LABELS[activity.type] ?? 'Active on';
+    const typeLabel = wording.activityTypes[activity.type] ?? wording.activityFallback;
     const details = [activity.details, activity.state].filter(Boolean).join(' · ');
     activities.push(
       details
@@ -68,4 +70,29 @@ export function getPresenceActivity(presence: PresenceActivityInput): string | n
   }
 
   return activities.length > 0 ? activities.join(' · ') : null;
+}
+
+function lowerFirst(text: string): string {
+  return text.charAt(0).toLowerCase() + text.slice(1);
+}
+
+export function getPresenceView(state: PresenceState, language: Language = 'en'): PresenceView {
+  const wording = CONTENT[language].presence;
+
+  if (state.kind === 'connecting') {
+    return { status: 'connecting', text: `discord · ${lowerFirst(wording.connecting)}` };
+  }
+
+  if (state.kind === 'unavailable') {
+    return { status: 'offline', text: `discord · ${lowerFirst(wording.unavailable)}` };
+  }
+
+  const { presence } = state;
+  const activity = getPresenceActivity(presence, language);
+  const parts = ['discord', getStatusLabel(presence.discord_status, language).toLowerCase()];
+  if (activity) {
+    parts.push(lowerFirst(activity));
+  }
+
+  return { status: presence.discord_status, text: parts.join(' · ') };
 }
