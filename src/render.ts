@@ -2,6 +2,7 @@ import {
   CONTACT_ROWS,
   HERO_COMMAND,
   NAME,
+  NEW_TAB,
   PROMPT_HOST,
   SECTION_ORDER,
   STACK,
@@ -79,7 +80,7 @@ export function updatePresence({ status, text }: PresenceView): void {
 function renderTags(tags: readonly string[], link?: EducationItem['link']): string {
   const items = tags.map(escapeHtml);
   if (link) {
-    items.push(`<a href="${link.href}">${escapeHtml(link.label)}</a>`);
+    items.push(`<a href="${link.href}" ${NEW_TAB}>${escapeHtml(link.label)}</a>`);
   }
   return items.length > 0 ? `<div class="tags">${items.join(' · ')}</div>` : '';
 }
@@ -153,7 +154,7 @@ function renderContact(content: Content): string {
   const { id, command: text } = content.sections.contact;
   const rows = CONTACT_ROWS.map(
     ({ label, href, text: value }) =>
-      `<div>${label.padEnd(CONTACT_LABEL_WIDTH)}<a href="${href}">${value}</a></div>`,
+      `<div>${label.padEnd(CONTACT_LABEL_WIDTH)}<a href="${href}" ${NEW_TAB}>${value}</a></div>`,
   ).join('');
   return `
     <section id="${id}" class="section">

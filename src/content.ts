@@ -98,10 +98,13 @@ export const CONTACT_ROWS = [
   },
 ] as const;
 
+// Attributes every link leaving the site carries.
+export const NEW_TAB = 'target="_blank" rel="noopener noreferrer"';
+
 function tip(id: string, label: string, text: string, href?: string): string {
   const tooltip = `<span id="${id}" role="tooltip" class="tip-text">${text}</span>`;
   return href
-    ? `<a class="tip" href="${href}" aria-describedby="${id}">${label}${tooltip}</a>`
+    ? `<a class="tip" href="${href}" ${NEW_TAB} aria-describedby="${id}">${label}${tooltip}</a>`
     : `<span class="tip" tabindex="0" aria-describedby="${id}">${label}${tooltip}</span>`;
 }
 
