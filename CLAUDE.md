@@ -21,7 +21,7 @@ bun run build                      # typecheck + vite build into dist/
 bun run preview                    # serve dist/
 ```
 
-`bun.lock` is the lockfile in use. `package-lock.json` is a leftover; don't update it by hand.
+`bun.lock` is the only lockfile; install with bun, not npm.
 
 ## Deployment
 
@@ -76,4 +76,3 @@ The scroll effect is plain text streaming in, with no screen effects such as fli
 - Design changes start as a mockup that Marco comments on, then get implemented here. Don't commit visual changes he hasn't seen (screenshots or a Cloudflare preview).
 - For visual checks, take Chromium screenshots (Playwright) at 1280px and 390px. The scroll reveal hides unreached text, so scroll the page to the bottom before a full-page screenshot.
 - Commit after each requested change, only the related files, in Conventional Commits style: `type(scope): short message`, then a body saying what changed, why, and how it was tested.
-- `docs/plans` and `docs/superpowers` describe the previous "developer workspace" design and are historical.
