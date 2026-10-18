@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'bun:test';
-import { visiblePrefixes } from '../src/reveal.ts';
+import { isFastScroll, visiblePrefixes } from '../src/reveal.ts';
 
 describe('visiblePrefixes', () => {
   const texts = ['abc', 'de'];
@@ -20,5 +20,20 @@ describe('visiblePrefixes', () => {
   test('ignores negative and fractional budgets', () => {
     expect(visiblePrefixes(texts, -3)).toEqual(['', '']);
     expect(visiblePrefixes(texts, 1.9)).toEqual(['a', '']);
+  });
+});
+
+describe('isFastScroll', () => {
+  test('flags quick flicks in either direction', () => {
+    expect(isFastScroll(600, 100)).toBe(true);
+    expect(isFastScroll(-600, 100)).toBe(true);
+  });
+
+  test('ignores slow scrolling', () => {
+    expect(isFastScroll(50, 100)).toBe(false);
+  });
+
+  test('ignores a zero interval', () => {
+    expect(isFastScroll(600, 0)).toBe(false);
   });
 });
