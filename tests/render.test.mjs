@@ -24,22 +24,33 @@ describe('renderNotFound', () => {
 });
 
 describe('renderAwesome', () => {
-  test('renders every category and project in both languages', () => {
-    for (const language of ['en', 'pt']) {
-      const content = CONTENT[language];
-      const html = renderAwesome(content, language, new Map());
-      for (const category of content.awesome.categories) {
-        expect(html).toContain(`ls ${category.name}/`);
-        for (const { repo } of category.projects) {
-          expect(html).toContain(`href="https://github.com/${repo}" target="_blank"`);
-        }
-      }
-    }
+  const ready = {
+    kind: 'ready',
+    mine: [{ owner: 'marpisco', name: 'ClassLink', description: 'Rooms', language: 'PHP', stars: 3, topics: ['php'], fork: false }],
+    starred: [
+      {
+        language: null,
+        repos: [{ owner: 'x', name: '<b>', description: '<script>', language: null, stars: 1500, topics: [], fork: false }],
+      },
+    ],
+  };
+
+  test('renders own repos first, then starred groups, in both languages', () => {
+    const en = renderAwesome(CONTENT.en, 'en', ready);
+    expect(en.indexOf('ls mine/')).toBeLessThan(en.indexOf('ls starred/other/'));
+    expect(en).toContain('href="https://github.com/marpisco/ClassLink" target="_blank"');
+    expect(en).toContain('★ 1.5k');
+    expect(renderAwesome(CONTENT.pt, 'pt', ready)).toContain('ls estrelas/outras/');
   });
 
-  test('shows known star counts and a placeholder while loading', () => {
-    const html = renderAwesome(CONTENT.en, 'en', new Map([['oven-sh/bun', 96_300]]));
-    expect(html).toContain('<span data-stars="oven-sh/bun">96.3k</span>');
-    expect(html).toContain('<span data-stars="vitejs/vite">…</span>');
+  test('escapes the data that comes from GitHub', () => {
+    const html = renderAwesome(CONTENT.en, 'en', ready);
+    expect(html).not.toContain('<script>');
+    expect(html).not.toContain('<b>');
+  });
+
+  test('shows loading and error states', () => {
+    expect(renderAwesome(CONTENT.en, 'en', { kind: 'loading' })).toContain('Loading from GitHub...');
+    expect(renderAwesome(CONTENT.pt, 'pt', { kind: 'error' })).toContain('role="alert"');
   });
 });

@@ -41,23 +41,17 @@ export type SnakeWording = {
   quit: string;
 };
 
-export type AwesomeProject = {
-  repo: string;
-  description: string;
-};
-
-export type AwesomeCategory = {
-  name: string;
-  projects: readonly AwesomeProject[];
-};
-
 export type AwesomeWording = {
   title: string;
   command: string;
   intro: string;
   home: string;
   viewOnGithub: string;
-  categories: readonly AwesomeCategory[];
+  mineCommand: string;
+  starredDir: string;
+  otherLanguage: string;
+  loading: string;
+  error: string;
 };
 
 export type Content = {
@@ -94,6 +88,7 @@ export const SNAKE_COMMAND = './snake';
 export const NAME = 'Marco Pisco';
 export const AWESOME_DIR = 'awesome';
 export const GITHUB_URL = 'https://github.com';
+export const GITHUB_USER = 'marpisco';
 
 export const STACK = [
   'git',
@@ -133,19 +128,6 @@ function tip(id: string, label: string, text: string, href?: string): string {
 const PAP_TIP = tip('pap-tip', 'PAP', 'Prova de Aptidão Profissional');
 const LED_TIP = tip('led-tip', 'LED', 'Laboratórios de Educação Digital', 'https://led.dge.medu.pt/');
 const CLASSLINK_LINK = { href: 'https://github.com/marpisco/ClassLink', label: 'github.com/marpisco/ClassLink' };
-
-// Placeholder list until the featured projects are chosen.
-const PLACEHOLDER_TEXT =
-  'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.';
-const PLACEHOLDER_REPOS = {
-  selfHosted: ['marpisco/ClassLink', 'jellyfin/jellyfin', 'immich-app/immich'],
-  devTools: ['oven-sh/bun', 'vitejs/vite', 'BurntSushi/ripgrep'],
-  networking: ['caddyserver/caddy', 'tailscale/tailscale'],
-};
-
-function placeholderProjects(repos: readonly string[]): AwesomeProject[] {
-  return repos.map((repo) => ({ repo, description: PLACEHOLDER_TEXT }));
-}
 
 const en: Content = {
   htmlLang: 'en',
@@ -290,14 +272,14 @@ const en: Content = {
   awesome: {
     title: 'Awesome projects',
     command: 'cat README.md',
-    intro: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Things I built and things I love.',
+    intro: "My own repos first, then the ones I've starred on GitHub, grouped by language.",
     home: 'cd ~',
     viewOnGithub: 'view on github →',
-    categories: [
-      { name: 'self-hosted', projects: placeholderProjects(PLACEHOLDER_REPOS.selfHosted) },
-      { name: 'dev-tools', projects: placeholderProjects(PLACEHOLDER_REPOS.devTools) },
-      { name: 'networking', projects: placeholderProjects(PLACEHOLDER_REPOS.networking) },
-    ],
+    mineCommand: 'ls mine/',
+    starredDir: 'starred',
+    otherLanguage: 'other',
+    loading: 'Loading from GitHub...',
+    error: 'GitHub is unavailable right now. Try again later.',
   },
 };
 
@@ -444,14 +426,14 @@ const pt: Content = {
   awesome: {
     title: 'Projetos incríveis',
     command: 'cat LEIA-ME.md',
-    intro: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Coisas que fiz e coisas de que gosto.',
+    intro: 'Primeiro os meus repositórios, depois os que marquei com estrela no GitHub, agrupados por linguagem.',
     home: 'cd ~',
     viewOnGithub: 'ver no github →',
-    categories: [
-      { name: 'auto-alojados', projects: placeholderProjects(PLACEHOLDER_REPOS.selfHosted) },
-      { name: 'ferramentas-dev', projects: placeholderProjects(PLACEHOLDER_REPOS.devTools) },
-      { name: 'redes', projects: placeholderProjects(PLACEHOLDER_REPOS.networking) },
-    ],
+    mineCommand: 'ls meus/',
+    starredDir: 'estrelas',
+    otherLanguage: 'outras',
+    loading: 'A carregar do GitHub...',
+    error: 'O GitHub está indisponível neste momento. Tenta mais tarde.',
   },
 };
 

@@ -265,6 +265,11 @@ button:focus-visible,
   color: var(--muted);
 }
 
+.card .tags {
+  padding-left: 0;
+  font-size: 13px;
+}
+
 .final-prompt {
   margin-top: 16px;
 }

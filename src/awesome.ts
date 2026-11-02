@@ -1,6 +1,6 @@
 import './styles.css';
 import { CONTENT } from './content';
-import { fetchStars, type StarCount } from './github';
+import { fetchOwnRepos, fetchStarredRepos, groupByLanguage, ownRepos } from './github';
 import {
   listenForLanguageClicks,
   readSavedLanguage,
@@ -8,7 +8,7 @@ import {
   saveLanguage,
   type Language,
 } from './i18n';
-import { renderAwesome, updateStars } from './render';
+import { renderAwesome, type AwesomeData } from './render';
 import { getRevealedFlags, setupScrollReveal } from './reveal';
 
 const app = document.querySelector<HTMLDivElement>('#app');
@@ -18,12 +18,15 @@ if (!app) {
 
 let language = resolveLanguage(readSavedLanguage(), navigator.languages ?? [navigator.language]);
 // Fetched once per page load and reused across language switches.
-const stars = new Map<string, StarCount>();
+let data: AwesomeData = { kind: 'loading' };
 
-const draw = (): void => {
+// Re-renders while keeping the units already streamed complete.
+const redraw = (): void => {
   const content = CONTENT[language];
-  app.innerHTML = renderAwesome(content, language, stars);
+  const revealed = getRevealedFlags();
+  app.innerHTML = renderAwesome(content, language, data);
   document.documentElement.lang = content.htmlLang;
+  setupScrollReveal(revealed);
 };
 
 listenForLanguageClicks(app, (next: Language) => {
@@ -33,18 +36,17 @@ listenForLanguageClicks(app, (next: Language) => {
 
   language = next;
   saveLanguage(language);
-  const revealed = getRevealedFlags();
-  draw();
-  setupScrollReveal(revealed);
+  redraw();
   app.querySelector<HTMLElement>(`[data-language="${language}"]`)?.focus();
 });
 
-draw();
-setupScrollReveal();
+redraw();
 
-const repos = new Set(CONTENT[language].awesome.categories.flatMap(({ projects }) => projects.map(({ repo }) => repo)));
-repos.forEach(async (repo) => {
-  const count = await fetchStars(repo);
-  stars.set(repo, count);
-  updateStars(repo, count);
-});
+Promise.all([fetchOwnRepos(), fetchStarredRepos()])
+  .then(([own, starred]) => {
+    data = { kind: 'ready', mine: ownRepos(own), starred: groupByLanguage(starred) };
+  })
+  .catch(() => {
+    data = { kind: 'error' };
+  })
+  .finally(redraw);
