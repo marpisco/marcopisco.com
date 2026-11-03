@@ -12,7 +12,7 @@ import {
   type EducationItem,
   type WorkEntry,
 } from './content';
-import { avatarUrl, formatStars, repoUrl, type LanguageGroup, type Repo } from './github';
+import { avatarUrl, formatStars, languageColor, repoUrl, type LanguageGroup, type Repo } from './github';
 import { LANGUAGES, type Language } from './i18n';
 import type { PresenceView } from './lanyard';
 
@@ -227,7 +227,11 @@ export type AwesomeData =
 
 function renderRepo(repo: Repo, content: Content): string {
   const description = repo.description ? `<p>${escapeHtml(repo.description)}</p>` : '';
-  const language = repo.language ? ` <span class="card-language">• ${escapeHtml(repo.language)}</span>` : '';
+  const color = repo.language ? languageColor(repo.language) : undefined;
+  const style = color ? ` style="--language-color: ${color}"` : '';
+  const language = repo.language
+    ? ` <span class="card-language"${style}>• ${escapeHtml(repo.language)}</span>`
+    : '';
   return `
         <article class="card" data-reveal>
           <div class="card-head">

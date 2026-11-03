@@ -257,7 +257,8 @@ button:focus-visible,
 }
 
 .card-language {
-  color: var(--stack);
+  /* Lightened so the darker GitHub language colors stay readable on the cards. */
+  color: color-mix(in srgb, var(--language-color, var(--stack)) 70%, var(--heading));
   font-weight: 400;
 }
 

@@ -7,6 +7,30 @@ const MAX_PAGES = 5;
 const AVATAR_SIZE = 80;
 const MAX_TOPICS = 5;
 
+// GitHub's own language colors (github-linguist), for the languages seen in the repos and stars.
+const LANGUAGE_COLORS: Record<string, string> = {
+  AutoIt: '#1C3552',
+  C: '#555555',
+  'C#': '#178600',
+  'C++': '#f34b7d',
+  CSS: '#663399',
+  Dart: '#00B4AB',
+  Go: '#00ADD8',
+  HTML: '#e34c26',
+  Java: '#b07219',
+  JavaScript: '#f1e05a',
+  Kotlin: '#A97BFF',
+  Markdown: '#083fa1',
+  PHP: '#4F5D95',
+  PowerShell: '#012456',
+  Python: '#3572A5',
+  Rust: '#dea584',
+  Shell: '#89e051',
+  Swift: '#F05138',
+  TypeScript: '#3178c6',
+  Vue: '#41b883',
+};
+
 export type Repo = {
   owner: string;
   name: string;
@@ -43,6 +67,10 @@ export function toRepo(repo: ApiRepo): Repo {
     topics: (repo.topics ?? []).slice(0, MAX_TOPICS),
     fork: repo.fork,
   };
+}
+
+export function languageColor(language: string): string | undefined {
+  return LANGUAGE_COLORS[language];
 }
 
 export function formatStars(count: number): string {
