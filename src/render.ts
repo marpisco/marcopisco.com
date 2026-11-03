@@ -209,12 +209,13 @@ export type AwesomeData =
 
 function renderRepo(repo: Repo, content: Content): string {
   const description = repo.description ? `<p>${escapeHtml(repo.description)}</p>` : '';
+  const language = repo.language ? ` <span class="card-language">• ${escapeHtml(repo.language)}</span>` : '';
   return `
         <article class="card" data-reveal>
           <div class="card-head">
             <img class="card-img" src="${avatarUrl(repo)}" alt="" width="40" height="40" loading="lazy" />
             <div>
-              <div class="card-title">${escapeHtml(repo.name)} <span class="stars">• ★ ${formatStars(repo.stars)}</span></div>
+              <div class="card-title">${escapeHtml(repo.name)} <span class="stars">• ★ ${formatStars(repo.stars)}</span>${language}</div>
               <div class="card-owner">${escapeHtml(repo.owner)}</div>
             </div>
           </div>

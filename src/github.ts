@@ -1,4 +1,4 @@
-import { GITHUB_URL, GITHUB_USER } from './content';
+import { GITHUB_URL, GITHUB_USER, HIDDEN_OWN_REPOS } from './content';
 
 const GITHUB_API = 'https://api.github.com';
 const PER_PAGE = 100;
@@ -59,9 +59,9 @@ export function avatarUrl(repo: Repo): string {
 
 const byStars = (a: Repo, b: Repo): number => b.stars - a.stars;
 
-// Own repos without forks, most starred first.
+// Own repos without forks or hidden ones, most starred first.
 export function ownRepos(repos: readonly Repo[]): Repo[] {
-  return repos.filter((repo) => !repo.fork).sort(byStars);
+  return repos.filter((repo) => !repo.fork && !HIDDEN_OWN_REPOS.includes(repo.name)).sort(byStars);
 }
 
 // Starred repos of other people, grouped by language: biggest group first, most starred repo first.

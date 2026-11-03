@@ -256,6 +256,11 @@ button:focus-visible,
   font-weight: 400;
 }
 
+.card-language {
+  color: var(--stack);
+  font-weight: 400;
+}
+
 .card-owner,
 .card-link {
   font-size: 13px;

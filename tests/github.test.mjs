@@ -52,8 +52,8 @@ describe('GitHub URLs', () => {
 });
 
 describe('ownRepos', () => {
-  test('drops forks and sorts by stars', () => {
-    const result = ownRepos([repo('a', 1), repo('fork', 9, 'Go', 'marpisco', true), repo('b', 5)]);
+  test('drops forks and hidden repos and sorts by stars', () => {
+    const result = ownRepos([repo('a', 1), repo('fork', 9, 'Go', 'marpisco', true), repo('b', 5), repo('old-site', 7)]);
     expect(result.map(({ name }) => name)).toEqual(['b', 'a']);
   });
 });

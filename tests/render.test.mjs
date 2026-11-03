@@ -40,6 +40,7 @@ describe('renderAwesome', () => {
     expect(en.indexOf('ls mine/')).toBeLessThan(en.indexOf('ls starred/other/'));
     expect(en).toContain('href="https://github.com/marpisco/ClassLink" target="_blank"');
     expect(en).toContain('★ 1.5k');
+    expect(en).toContain('<span class="card-language">• PHP</span>');
     expect(renderAwesome(CONTENT.pt, 'pt', ready)).toContain('ls estrelas/outras/');
   });
 

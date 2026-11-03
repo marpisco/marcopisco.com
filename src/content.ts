@@ -89,6 +89,8 @@ export const NAME = 'Marco Pisco';
 export const AWESOME_DIR = 'awesome';
 export const GITHUB_URL = 'https://github.com';
 export const GITHUB_USER = 'marpisco';
+// Own repos left out of the awesome page.
+export const HIDDEN_OWN_REPOS: readonly string[] = ['0789-exercicios01', '0789-exercicios02', 'marpisco', 'old-site'];
 
 export const STACK = [
   'git',
@@ -272,7 +274,7 @@ const en: Content = {
   awesome: {
     title: 'Awesome projects',
     command: 'cat README.md',
-    intro: "My own repos first, then the ones I've starred on GitHub, grouped by language.",
+    intro: 'Some projects I enjoyed enough to put a star in GitHub.',
     home: 'cd ~',
     viewOnGithub: 'view on github →',
     mineCommand: 'ls mine/',
@@ -426,7 +428,7 @@ const pt: Content = {
   awesome: {
     title: 'Projetos incríveis',
     command: 'cat LEIA-ME.md',
-    intro: 'Primeiro os meus repositórios, depois os que marquei com estrela no GitHub, agrupados por linguagem.',
+    intro: 'Alguns projetos de que gostei o suficiente para lhes dar uma estrela no GitHub.',
     home: 'cd ~',
     viewOnGithub: 'ver no github →',
     mineCommand: 'ls meus/',
