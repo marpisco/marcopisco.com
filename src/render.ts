@@ -1,8 +1,11 @@
 import {
+  ARTEM_COMMAND,
+  AWESOME_DIR,
   CONTACT_ROWS,
   HERO_COMMAND,
   NAME,
   NEW_TAB,
+  PAGES_COMMAND,
   PROMPT_HOST,
   SECTION_ORDER,
   STACK,
@@ -10,6 +13,8 @@ import {
   type EducationItem,
   type WorkEntry,
 } from './content';
+import { ARTEM_IMAGE } from './artem';
+import { avatarUrl, formatStars, languageColor, repoUrl, type LanguageGroup, type Repo } from './github';
 import { LANGUAGES, type Language } from './i18n';
 import type { PresenceView } from './lanyard';
 
@@ -18,7 +23,7 @@ export type RenderOptions = {
   presence: PresenceView;
 };
 
-const CONTACT_LABEL_WIDTH = 10;
+const LABEL_WIDTH = 10;
 const HOME_PATH = '/';
 
 export function escapeHtml(text: string): string {
@@ -37,11 +42,7 @@ function command(text: string): string {
   return `<div data-reveal><span class="prompt">$</span> ${escapeHtml(text)}</div>`;
 }
 
-function renderNav(content: Content, language: Language): string {
-  const links = SECTION_ORDER.map((key) => {
-    const { id } = content.sections[key];
-    return `<a href="#${id}">./${id}</a>`;
-  }).join('');
+function renderNav(content: Content, language: Language, host: string, links: string): string {
   const buttons = LANGUAGES.map(
     (code) =>
       `<button type="button" data-language="${code}" aria-pressed="${code === language}">${code}</button>`,
@@ -49,9 +50,16 @@ function renderNav(content: Content, language: Language): string {
 
   return `
     <nav class="nav" aria-label="${content.navLabel}">
-      <span class="nav-host">${PROMPT_HOST}</span>${links}
+      <span class="nav-host">${host}</span>${links}
       <span class="lang" role="group" aria-label="${content.languageLabel}">${buttons}</span>
     </nav>`;
+}
+
+function renderSectionLinks(content: Content): string {
+  return SECTION_ORDER.map((key) => {
+    const { id } = content.sections[key];
+    return `<a href="#${id}">./${id}</a>`;
+  }).join('');
 }
 
 function renderHero(presence: PresenceView): string {
@@ -61,6 +69,17 @@ function renderHero(presence: PresenceView): string {
       <h1 class="name" data-reveal>${NAME}</h1>
       <p class="subtitle"><span id="typed-subtitle"></span><span class="cursor" aria-hidden="true"></span></p>
       ${renderPresence(presence)}
+    </section>`;
+}
+
+function renderArtem(): string {
+  return `
+    <section class="section split-pane">
+      ${command(ARTEM_COMMAND)}
+      <div class="artem" data-reveal>
+        <pre class="artem-ascii" aria-hidden="true"></pre>
+        <img class="artem-photo" src="${ARTEM_IMAGE}" alt="${NAME}" width="960" height="960" />
+      </div>
     </section>`;
 }
 
@@ -154,11 +173,27 @@ function renderContact(content: Content): string {
   const { id, command: text } = content.sections.contact;
   const rows = CONTACT_ROWS.map(
     ({ label, href, text: value }) =>
-      `<div>${label.padEnd(CONTACT_LABEL_WIDTH)}<a href="${href}" ${NEW_TAB}>${value}</a></div>`,
+      `<div>${label.padEnd(LABEL_WIDTH)}<a href="${href}" ${NEW_TAB}>${value}</a></div>`,
   ).join('');
   return `
     <section id="${id}" class="section">
       ${command(text)}
+      <div class="contact" data-reveal>${rows}</div>
+    </section>`;
+}
+
+// The site's other pages, listed like `ls` output.
+function renderPages(content: Content): string {
+  const pages = [{ name: AWESOME_DIR, title: content.awesome.title }];
+  const rows = pages
+    .map(
+      ({ name, title }) =>
+        `<div><a href="/${name}">${name}</a>${' '.repeat(Math.max(1, LABEL_WIDTH - name.length))}- ${escapeHtml(title)}</div>`,
+    )
+    .join('');
+  return `
+    <section class="section">
+      ${command(PAGES_COMMAND)}
       <div class="contact" data-reveal>${rows}</div>
       <div class="final-prompt" data-reveal><span class="prompt">$</span> <span class="cursor" aria-hidden="true"></span></div>
     </section>`;
@@ -167,13 +202,17 @@ function renderContact(content: Content): string {
 export function renderPage(content: Content, options: RenderOptions): string {
   return `
   <div class="page">
-    ${renderNav(content, options.language)}
-    ${renderHero(options.presence)}
+    ${renderNav(content, options.language, PROMPT_HOST, renderSectionLinks(content))}
+    <div class="split">
+      ${renderHero(options.presence)}
+      ${renderArtem()}
+    </div>
     ${renderAbout(content)}
     ${renderStack(content)}
     ${renderWork(content)}
     ${renderEducation(content)}
     ${renderContact(content)}
+    ${renderPages(content)}
   </div>`;
 }
 
@@ -194,5 +233,71 @@ export function renderNotFound(content: Content, path: string): string {
       <div><span class="prompt">$</span> cd ~ <a href="${HOME_PATH}">${muted('#')} ${escapeHtml(home)}</a></div>
       <div class="final-prompt"><span class="prompt">$</span> <span class="cursor" aria-hidden="true"></span></div>
     </section>
+  </div>`;
+}
+
+export type AwesomeData =
+  | { kind: 'loading' }
+  | { kind: 'error' }
+  | { kind: 'ready'; mine: readonly Repo[]; starred: readonly LanguageGroup[] };
+
+function renderRepo(repo: Repo, content: Content): string {
+  const description = repo.description ? `<p>${escapeHtml(repo.description)}</p>` : '';
+  const color = repo.language ? languageColor(repo.language) : undefined;
+  const style = color ? ` style="--language-color: ${color}"` : '';
+  const language = repo.language
+    ? ` <span class="card-language"${style}>• ${escapeHtml(repo.language)}</span>`
+    : '';
+  return `
+        <article class="card" data-reveal>
+          <div class="card-head">
+            <img class="card-img" src="${avatarUrl(repo)}" alt="" width="40" height="40" loading="lazy" />
+            <div>
+              <div class="card-title">${escapeHtml(repo.name)} <span class="stars">• ★ ${formatStars(repo.stars)}</span>${language}</div>
+              <div class="card-owner">${escapeHtml(repo.owner)}</div>
+            </div>
+          </div>
+          <a class="card-link" href="${repoUrl(repo)}" ${NEW_TAB}>${escapeHtml(content.awesome.viewOnGithub)}</a>
+          ${description}
+          ${renderTags(repo.topics)}
+        </article>`;
+}
+
+function renderRepoSection(text: string, repos: readonly Repo[], content: Content): string {
+  return `
+    <section class="section">
+      ${command(text)}
+      <div class="cards">${repos.map((repo) => renderRepo(repo, content)).join('')}
+      </div>
+    </section>`;
+}
+
+function renderAwesomeData(content: Content, data: AwesomeData): string {
+  const { mineCommand, starredDir, otherLanguage, loading, error } = content.awesome;
+  if (data.kind === 'loading') {
+    return `<div class="muted">${escapeHtml(loading)}</div>`;
+  }
+  if (data.kind === 'error') {
+    return `<div class="error" role="alert">${escapeHtml(error)}</div>`;
+  }
+
+  const starred = data.starred.map(({ language, repos }) =>
+    renderRepoSection(`ls ${starredDir}/${language ?? otherLanguage}/`, repos, content),
+  );
+  return renderRepoSection(mineCommand, data.mine, content) + starred.join('');
+}
+
+export function renderAwesome(content: Content, language: Language, data: AwesomeData): string {
+  const { title, command: text, intro, home } = content.awesome;
+  const homeLink = `<a href="${HOME_PATH}">${escapeHtml(home)}</a>`;
+  return `
+  <div class="page">
+    ${renderNav(content, language, `${PROMPT_HOST}/${AWESOME_DIR}`, homeLink)}
+    <section class="section">
+      ${command(text)}
+      <h1 class="name" data-reveal>${escapeHtml(title)}</h1>
+      <p class="subtitle" data-reveal>${escapeHtml(intro)}</p>
+    </section>
+    ${renderAwesomeData(content, data)}
   </div>`;
 }

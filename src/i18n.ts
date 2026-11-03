@@ -30,3 +30,22 @@ export function readSavedLanguage(): string | null {
     return null;
   }
 }
+
+export function saveLanguage(language: Language): void {
+  try {
+    localStorage.setItem(LANGUAGE_STORAGE_KEY, language);
+  } catch {
+    // The choice still applies to the current page when storage is unavailable.
+  }
+}
+
+// Calls `onSwitch` when one of the `[data-language]` buttons inside `root` is clicked.
+export function listenForLanguageClicks(root: HTMLElement, onSwitch: (language: Language) => void): void {
+  root.addEventListener('click', (event) => {
+    const button = (event.target as Element).closest<HTMLElement>('[data-language]');
+    const next = parseLanguage(button?.dataset.language ?? null);
+    if (next) {
+      onSwitch(next);
+    }
+  });
+}

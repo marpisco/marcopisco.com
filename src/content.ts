@@ -41,6 +41,19 @@ export type SnakeWording = {
   quit: string;
 };
 
+export type AwesomeWording = {
+  title: string;
+  command: string;
+  intro: string;
+  home: string;
+  viewOnGithub: string;
+  mineCommand: string;
+  starredDir: string;
+  otherLanguage: string;
+  loading: string;
+  error: string;
+};
+
 export type Content = {
   htmlLang: string;
   navLabel: string;
@@ -58,6 +71,7 @@ export type Content = {
   presence: PresenceWording;
   notFound: { error: string; home: string };
   snake: SnakeWording;
+  awesome: AwesomeWording;
 };
 
 export const SECTION_ORDER: readonly SectionKey[] = [
@@ -70,8 +84,15 @@ export const SECTION_ORDER: readonly SectionKey[] = [
 
 export const PROMPT_HOST = 'marco@marcopisco.com:~';
 export const HERO_COMMAND = 'whoami';
+export const PAGES_COMMAND = 'ls /var/www/';
+export const ARTEM_COMMAND = 'artem marco.webp';
 export const SNAKE_COMMAND = './snake';
 export const NAME = 'Marco Pisco';
+export const AWESOME_DIR = 'awesome';
+export const GITHUB_URL = 'https://github.com';
+export const GITHUB_USER = 'marpisco';
+// Own repos left out of the awesome page.
+export const HIDDEN_OWN_REPOS: readonly string[] = ['0789-exercicios01', '0789-exercicios02', 'marpisco', 'old-site'];
 
 export const STACK = [
   'git',
@@ -252,6 +273,18 @@ const en: Content = {
     touchControls: 'swipe to move · tap to start/pause',
     quit: 'quit',
   },
+  awesome: {
+    title: 'Awesome projects',
+    command: 'cat README.md',
+    intro: 'Some projects I enjoyed enough to put a star in GitHub.',
+    home: 'cd ~',
+    viewOnGithub: 'view on github →',
+    mineCommand: 'ls mine/',
+    starredDir: 'starred',
+    otherLanguage: 'other',
+    loading: 'Loading from GitHub...',
+    error: 'GitHub is unavailable right now. Try again later.',
+  },
 };
 
 const pt: Content = {
@@ -393,6 +426,18 @@ const pt: Content = {
     controls: 'setas/wasd mover · espaço começar/pausar · esc sair',
     touchControls: 'desliza para mover · toca para começar/pausar',
     quit: 'sair',
+  },
+  awesome: {
+    title: 'Projetos incríveis',
+    command: 'cat LEIA-ME.md',
+    intro: 'Alguns projetos de que gostei o suficiente para lhes dar uma estrela no GitHub.',
+    home: 'cd ~',
+    viewOnGithub: 'ver no github →',
+    mineCommand: 'ls meus/',
+    starredDir: 'estrelas',
+    otherLanguage: 'outras',
+    loading: 'A carregar do GitHub...',
+    error: 'O GitHub está indisponível neste momento. Tenta mais tarde.',
   },
 };
 
