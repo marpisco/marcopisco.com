@@ -85,6 +85,7 @@ export const SECTION_ORDER: readonly SectionKey[] = [
 export const PROMPT_HOST = 'marco@marcopisco.com:~';
 export const HERO_COMMAND = 'whoami';
 export const PAGES_COMMAND = 'ls /var/www/';
+export const ARTEM_COMMAND = 'artem marco.webp';
 export const SNAKE_COMMAND = './snake';
 export const NAME = 'Marco Pisco';
 export const AWESOME_DIR = 'awesome';

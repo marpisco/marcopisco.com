@@ -1,4 +1,5 @@
 import {
+  ARTEM_COMMAND,
   AWESOME_DIR,
   CONTACT_ROWS,
   HERO_COMMAND,
@@ -12,6 +13,7 @@ import {
   type EducationItem,
   type WorkEntry,
 } from './content';
+import { ARTEM_IMAGE } from './artem';
 import { avatarUrl, formatStars, languageColor, repoUrl, type LanguageGroup, type Repo } from './github';
 import { LANGUAGES, type Language } from './i18n';
 import type { PresenceView } from './lanyard';
@@ -67,6 +69,17 @@ function renderHero(presence: PresenceView): string {
       <h1 class="name" data-reveal>${NAME}</h1>
       <p class="subtitle"><span id="typed-subtitle"></span><span class="cursor" aria-hidden="true"></span></p>
       ${renderPresence(presence)}
+    </section>`;
+}
+
+function renderArtem(): string {
+  return `
+    <section class="section">
+      ${command(ARTEM_COMMAND)}
+      <div class="artem" data-reveal>
+        <pre class="artem-ascii" aria-hidden="true"></pre>
+        <img class="artem-photo" src="${ARTEM_IMAGE}" alt="${NAME}" width="960" height="960" />
+      </div>
     </section>`;
 }
 
@@ -191,6 +204,7 @@ export function renderPage(content: Content, options: RenderOptions): string {
   <div class="page">
     ${renderNav(content, options.language, PROMPT_HOST, renderSectionLinks(content))}
     ${renderHero(options.presence)}
+    ${renderArtem()}
     ${renderAbout(content)}
     ${renderStack(content)}
     ${renderWork(content)}

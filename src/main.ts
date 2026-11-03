@@ -7,6 +7,7 @@ import {
   saveLanguage,
   type Language,
 } from './i18n';
+import { setupArtem } from './artem';
 import { isKonami, pushKey } from './konami';
 import { getPresenceView, type PresenceState } from './lanyard';
 import { startPresence } from './presence';
@@ -84,6 +85,7 @@ const draw = (): void => {
     presence: getPresenceView(presenceState, language),
   });
   document.documentElement.lang = content().htmlLang;
+  setupArtem();
 };
 
 const switchLanguage = (next: Language): void => {

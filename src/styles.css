@@ -217,6 +217,39 @@ button:focus-visible,
   white-space: pre;
 }
 
+.artem {
+  position: relative;
+  /* 80 columns of about 0.6em by 48 rows of 1em, square like the photo. */
+  font-size: min(8px, calc((100vw - 48px) / 48));
+  width: 48em;
+  height: 48em;
+}
+
+.artem-ascii {
+  position: relative;
+  z-index: 1;
+  margin: 0;
+  font: inherit;
+  line-height: 1;
+  color: var(--subtle);
+  overflow: hidden;
+}
+
+.artem-photo {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  transition: opacity 300ms var(--ease-out);
+}
+
+.artem.show-photo .artem-photo {
+  opacity: 1;
+  /* Fades in evenly while the art scrambles away (SCRAMBLE_MS in artem.ts). */
+  transition: opacity 700ms linear;
+}
+
 .cards {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
@@ -435,6 +468,11 @@ button:focus-visible,
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .artem-photo,
+  .artem.show-photo .artem-photo {
+    transition: none;
+  }
+
   .cursor {
     animation: none;
   }
