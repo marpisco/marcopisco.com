@@ -217,10 +217,23 @@ button:focus-visible,
   white-space: pre;
 }
 
+/* Hero and artem side by side, like a tmux vertical split. */
+.split {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: start;
+  gap: 24px;
+}
+
+.split-pane {
+  padding-left: 24px;
+  border-left: 1px solid var(--tooltip-border);
+}
+
 .artem {
   position: relative;
   /* 80 columns of about 0.6em by 48 rows of 1em, square like the photo. */
-  font-size: min(8px, calc((100vw - 48px) / 48));
+  font-size: 5px;
   width: 48em;
   height: 48em;
 }
@@ -447,6 +460,19 @@ button:focus-visible,
 @keyframes blink {
   50% {
     opacity: 0;
+  }
+}
+
+/* Too narrow for both panes: stack them, like a tmux horizontal split. */
+@media (max-width: 760px) {
+  .split {
+    grid-template-columns: 1fr;
+  }
+
+  .split-pane {
+    padding: 24px 0 0;
+    border-left: 0;
+    border-top: 1px solid var(--tooltip-border);
   }
 }
 

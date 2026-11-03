@@ -74,7 +74,7 @@ function renderHero(presence: PresenceView): string {
 
 function renderArtem(): string {
   return `
-    <section class="section">
+    <section class="section split-pane">
       ${command(ARTEM_COMMAND)}
       <div class="artem" data-reveal>
         <pre class="artem-ascii" aria-hidden="true"></pre>
@@ -203,8 +203,10 @@ export function renderPage(content: Content, options: RenderOptions): string {
   return `
   <div class="page">
     ${renderNav(content, options.language, PROMPT_HOST, renderSectionLinks(content))}
-    ${renderHero(options.presence)}
-    ${renderArtem()}
+    <div class="split">
+      ${renderHero(options.presence)}
+      ${renderArtem()}
+    </div>
     ${renderAbout(content)}
     ${renderStack(content)}
     ${renderWork(content)}
