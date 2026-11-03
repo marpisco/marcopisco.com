@@ -4,6 +4,7 @@ import {
   HERO_COMMAND,
   NAME,
   NEW_TAB,
+  PAGES_COMMAND,
   PROMPT_HOST,
   SECTION_ORDER,
   STACK,
@@ -20,7 +21,7 @@ export type RenderOptions = {
   presence: PresenceView;
 };
 
-const CONTACT_LABEL_WIDTH = 10;
+const LABEL_WIDTH = 10;
 const HOME_PATH = '/';
 
 export function escapeHtml(text: string): string {
@@ -159,11 +160,27 @@ function renderContact(content: Content): string {
   const { id, command: text } = content.sections.contact;
   const rows = CONTACT_ROWS.map(
     ({ label, href, text: value }) =>
-      `<div>${label.padEnd(CONTACT_LABEL_WIDTH)}<a href="${href}" ${NEW_TAB}>${value}</a></div>`,
+      `<div>${label.padEnd(LABEL_WIDTH)}<a href="${href}" ${NEW_TAB}>${value}</a></div>`,
   ).join('');
   return `
     <section id="${id}" class="section">
       ${command(text)}
+      <div class="contact" data-reveal>${rows}</div>
+    </section>`;
+}
+
+// The site's other pages, listed like `ls` output.
+function renderPages(content: Content): string {
+  const pages = [{ name: AWESOME_DIR, title: content.awesome.title }];
+  const rows = pages
+    .map(
+      ({ name, title }) =>
+        `<div><a href="/${name}">${name}</a>${' '.repeat(Math.max(1, LABEL_WIDTH - name.length))}- ${escapeHtml(title)}</div>`,
+    )
+    .join('');
+  return `
+    <section class="section">
+      ${command(PAGES_COMMAND)}
       <div class="contact" data-reveal>${rows}</div>
       <div class="final-prompt" data-reveal><span class="prompt">$</span> <span class="cursor" aria-hidden="true"></span></div>
     </section>`;
@@ -179,6 +196,7 @@ export function renderPage(content: Content, options: RenderOptions): string {
     ${renderWork(content)}
     ${renderEducation(content)}
     ${renderContact(content)}
+    ${renderPages(content)}
   </div>`;
 }
 

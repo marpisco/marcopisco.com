@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'bun:test';
 import { CONTENT } from '../src/content.ts';
-import { escapeHtml, formatCdError, renderAwesome, renderNotFound } from '../src/render.ts';
+import { escapeHtml, formatCdError, renderAwesome, renderNotFound, renderPage } from '../src/render.ts';
 
 describe('formatCdError', () => {
   test('builds the bash-style error line', () => {
@@ -53,5 +53,17 @@ describe('renderAwesome', () => {
   test('shows loading and error states', () => {
     expect(renderAwesome(CONTENT.en, 'en', { kind: 'loading' })).toContain('Loading from GitHub...');
     expect(renderAwesome(CONTENT.pt, 'pt', { kind: 'error' })).toContain('role="alert"');
+  });
+});
+
+describe('renderPage', () => {
+  test('lists the other pages after contact, linking in the same tab', () => {
+    const presence = { status: 'offline', text: '' };
+    for (const language of ['en', 'pt']) {
+      const html = renderPage(CONTENT[language], { language, presence });
+      expect(html).toContain('ls /var/www/');
+      expect(html).toContain(`<a href="/awesome">awesome</a>   - ${CONTENT[language].awesome.title}`);
+      expect(html.indexOf('ls /var/www/')).toBeGreaterThan(html.indexOf(CONTENT[language].sections.contact.command));
+    }
   });
 });
